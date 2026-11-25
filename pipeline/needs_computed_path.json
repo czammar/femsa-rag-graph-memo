@@ -1,0 +1,691 @@
+[
+  {
+    "question": "¿A cuántas personas beneficiaron las iniciativas comunitarias de OXXO en 2024?",
+    "answer": "Más de 13,000 adultos mayores en el programa Huellas Mayores y más de 290,000 personas beneficiadas con iniciativas comunitarias.",
+    "source_pages": [
+      4
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿A cuánto equivalieron en dólares los ingresos y la utilidad de operación de FEMSA en 2024?",
+    "answer": "US$37.4 mil millones en ingresos totales y US$3.3 mil millones en utilidad de operación.",
+    "source_pages": [
+      13
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cómo le fue a la división de Salud en Colombia, Chile y Ecuador en 2024?",
+    "answer": "En Colombia se consolidó como el actor más relevante del sector farmacéutico; en Chile se mantuvo líder en volumen y rentabilidad; en Ecuador mantuvo su posición.",
+    "source_pages": [
+      6
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue el EBITDA ajustado de Coca-Cola FEMSA en 2024?",
+    "answer": "Ps. 56 mil millones de EBITDA ajustado, con un margen de 20.1%.",
+    "source_pages": [
+      29
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue la división con mayor crecimiento de ingresos en 2024?",
+    "answer": "Empate: Coca-Cola FEMSA y Proximidad Europa, ambas con 14.2%.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue la división con mayor utilidad bruta en 2024?",
+    "answer": "Proximidad Américas, con Ps. 136,993 millones.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue la división con mayores ingresos en 2024?",
+    "answer": "Proximidad Américas, con Ps. 307,197 millones.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue la división con menor crecimiento de ingresos en 2024?",
+    "answer": "Salud, con 5.8%.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue la división con menor utilidad bruta en 2024?",
+    "answer": "Combustibles, con Ps. 7,935 millones.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuál fue la división con menores ingresos en 2024?",
+    "answer": "Proximidad Europa, con Ps. 49,755 millones.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuáles fueron las ventas netas, el costo de ventas y la utilidad bruta de FEMSA en 2024?",
+    "answer": "Ps. 775,551 millones en ventas netas, Ps. 460,072 millones de costo de ventas y Ps. 321,513 millones de utilidad bruta.",
+    "source_pages": [
+      109
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuáles son las tres prioridades de la estrategia FEMSA Forward?",
+    "answer": "Tres prioridades: invertir en las tres verticales principales con enfoque orgánico, desarrollar nuevas vías de creación de valor y optimizar la estructura de capital.",
+    "source_pages": [
+      3
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuáles son los tres pilares estratégicos de Spin?",
+    "answer": "Tres pilares estratégicos: lealtad (Spin Premia), pagos (Spin by OXXO) y plataforma de servicios financieros.",
+    "source_pages": [
+      5,
+      35
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánta deuda a corto y largo plazo tenía FEMSA en 2024?",
+    "answer": "Ps. 202,930 millones de deuda a corto plazo y Ps. 267,475 millones de deuda a largo plazo.",
+    "source_pages": [
+      108
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas farmacias tenía Salud en México, Chile, Ecuador y Colombia en 2024?",
+    "answer": "1,739 en México, 997 en Chile, 980 en Ecuador y 945 en Colombia.",
+    "source_pages": [
+      21
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas farmacias tiene Salud en México, Chile, Ecuador y Colombia?",
+    "answer": "1,739 en México, 997 en Chile, 980 en Ecuador y 945 en Colombia, para un total de 4,661 farmacias.",
+    "source_pages": [
+      21
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas líneas de producción nuevas abrió Coca-Cola FEMSA en México, Guatemala, Colombia y Brasil en 2024?",
+    "answer": "7 líneas nuevas de producción iniciaron operaciones en 2024: 3 en México, 2 en Guatemala, 1 en Colombia y 1 en Brasil.",
+    "source_pages": [
+      4,
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas líneas nuevas de producción iniciaron operaciones en 2024 y dónde?",
+    "answer": "7 líneas nuevas de producción iniciaron operaciones en 2024: 3 en México, 2 en Guatemala, 1 en Colombia y 1 en Brasil.",
+    "source_pages": [
+      4,
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas líneas nuevas y centros de distribución nuevos sumó Coca-Cola FEMSA en 2024?",
+    "answer": "7 líneas nuevas de producción y 4 centros de distribución nuevos.",
+    "source_pages": [
+      30,
+      32
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas líneas y unidades podía despachar el nuevo centro de distribución de Salud en Colombia?",
+    "answer": "Un centro de distribución nuevo en Colombia de 26,641 metros cuadrados, con capacidad para despachar 21,500 líneas y más de 120,000 unidades.",
+    "source_pages": [
+      26
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas plantas embotelladoras y centros de distribución opera Coca-Cola FEMSA?",
+    "answer": "56 plantas embotelladoras y 256 centros de distribución.",
+    "source_pages": [
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas prioridades estratégicas tiene Coca-Cola FEMSA?",
+    "answer": "Seis prioridades estratégicas; la estrategia se actualizó en 2023 y 2024 fue el segundo capítulo de la transformación.",
+    "source_pages": [
+      28
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas tiendas OXXO hay en México y cuántas tiendas OXXO hay en total?",
+    "answer": "23,206 tiendas en México y 24,462 tiendas OXXO en total.",
+    "source_pages": [
+      21,
+      23
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas tiendas OXXO sumaban Colombia, Brasil y Chile con Perú en 2024?",
+    "answer": "569 en Colombia, 594 en Brasil (Grupo Nós) y 438 en Chile y Perú.",
+    "source_pages": [
+      22
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas tiendas tenía Proximidad Europa en Luxemburgo, Países Bajos y Austria en 2024?",
+    "answer": "76 en Luxemburgo, 54 en Países Bajos y 31 en Austria.",
+    "source_pages": [
+      21
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántas tiendas tiene Proximidad Europa en Alemania, Suiza, Luxemburgo, Países Bajos y Austria?",
+    "answer": "1,376 en Alemania, 1,241 en Suiza, 76 en Luxemburgo, 54 en Países Bajos y 31 en Austria, para un total de 2,778 tiendas.",
+    "source_pages": [
+      21
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto aumentó el gasto promedio y cuánto cayó el tráfico en Proximidad Américas en 2024?",
+    "answer": "Un aumento de 5.7% en el gasto promedio y una disminución de 1.5% en el tráfico.",
+    "source_pages": [
+      23
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto aumentó el ticket promedio y cuánto cayó el tráfico en Proximidad Américas en 2024?",
+    "answer": "Un aumento de 5.7% en el ticket promedio y una disminución de 1.5% en el tráfico de mismas tiendas.",
+    "source_pages": [
+      114
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto aumentó la capacidad de producción de Coca-Cola FEMSA en 2024?",
+    "answer": "La capacidad de producción aumentó 3.5% (más de 4% en México) y la de almacenamiento y distribución 5%.",
+    "source_pages": [
+      30,
+      32
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto aumentó la producción de las líneas instaladas de Coca-Cola FEMSA en los últimos 2 años?",
+    "answer": "Un aumento de 14% en la producción de las líneas instaladas en los últimos 2 años, equivalente a 8 líneas embotelladoras nuevas, y 50% más capacidad de almacenamiento que en 2022.",
+    "source_pages": [
+      32
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto crecieron en México los tés, Powerade y Monster en 2024?",
+    "answer": "67% en tés, 39% en Powerade y 12% en Monster.",
+    "source_pages": [
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto crecieron las bebidas no carbonatadas en México en 2024?",
+    "answer": "Las bebidas no carbonatadas en México crecieron 8% en volumen, con 67% en tés, 39% en Powerade y 12% en Monster.",
+    "source_pages": [
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto crecieron las capacidades de producción y distribución de Coca-Cola FEMSA en 2024?",
+    "answer": "La capacidad de producción aumentó 3.5% (más de 4% en México) y la de almacenamiento y distribución 5%.",
+    "source_pages": [
+      30,
+      32
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto crecieron los ingresos, la utilidad bruta y el EBITDA de FEMSA en 2024?",
+    "answer": "Los ingresos 11.2%, la utilidad bruta 15.0% y el EBITDA 20.6%.",
+    "source_pages": [
+      108,
+      109,
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto crecieron los tés, Powerade y Monster en México en 2024?",
+    "answer": "Las bebidas no carbonatadas en México crecieron 8% en volumen, con 67% en tés, 39% en Powerade y 12% en Monster.",
+    "source_pages": [
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto creció Coca-Cola Zero Sugar en Brasil en 2024?",
+    "answer": "El volumen de Coca-Cola Zero Sugar creció 31% en 2024 y 56% en Brasil.",
+    "source_pages": [
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto creció el programa de lealtad Premia Juntos+ en 2024?",
+    "answer": "Creció de 250,000 clientes a principios de año a más de 1.1 millones al cierre de 2024.",
+    "source_pages": [
+      4,
+      31
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto creció el volumen de Coca-Cola Zero Sugar en 2024?",
+    "answer": "El volumen de Coca-Cola Zero Sugar creció 31% en 2024 y 56% en Brasil.",
+    "source_pages": [
+      30
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto pagó FEMSA en dividendos especiales en 2024?",
+    "answer": "Se completó la desinversión de negocios no estratégicos en 2024, con dividendos especiales de Ps. 10,091 millones y recompras de casi 3% de las acciones en circulación.",
+    "source_pages": [
+      3
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto sumaban los activos, pasivos y capital de FEMSA en 2024?",
+    "answer": "Ps. 851,536 millones en activos, Ps. 470,405 millones en pasivos y Ps. 381,131 millones en capital.",
+    "source_pages": [
+      108
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto suman los ingresos de Proximidad Américas y Coca-Cola FEMSA en 2024 dentro del total consolidado?",
+    "answer": "Proximidad Américas Ps. 307,197 millones y Coca-Cola FEMSA Ps. 279,793 millones, dentro de un total consolidado de Ps. 781,585 millones.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuánto sumaron la depreciación y la amortización de FEMSA en 2024?",
+    "answer": "Ps. 35,199 millones de depreciación y Ps. 9,728 millones de amortización y otros cargos.",
+    "source_pages": [
+      109
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos adultos mayores participaban en el programa Huellas Mayores en 2024?",
+    "answer": "Más de 13,000 adultos mayores en el programa Huellas Mayores y más de 290,000 personas beneficiadas con iniciativas comunitarias.",
+    "source_pages": [
+      4
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos años llevaba OXXO operando en Colombia en 2024?",
+    "answer": "15 años operando en Colombia, con 569 tiendas OXXO.",
+    "source_pages": [
+      22
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos clientes activos tenía la plataforma Juntos+ en 2024?",
+    "answer": "1.3 millones de clientes activos, más de 60% de la base de clientes.",
+    "source_pages": [
+      4,
+      27,
+      31
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos clientes empresariales atendía el negocio B2B de Combustibles en 2024?",
+    "answer": "El canal B2B representó 18% de las ventas totales, con más de 7,000 clientes empresariales y más de 70,000 unidades suministradas.",
+    "source_pages": [
+      26
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos clientes sumaban Juntos+ y Premia Juntos+ al cierre de 2024?",
+    "answer": "1.3 millones de clientes activos en Juntos+ y más de 1.1 millones en Premia Juntos+.",
+    "source_pages": [
+      4,
+      31
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos clientes tenía el programa Premia Juntos+ a principios y a finales de 2024?",
+    "answer": "Creció de 250,000 clientes a principios de año a más de 1.1 millones al cierre de 2024.",
+    "source_pages": [
+      4,
+      31
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos colaboradores tiene FEMSA?",
+    "answer": "Presencia en 18 países y más de 388,000 colaboradores.",
+    "source_pages": [
+      6,
+      10
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos puntos de venta suman Proximidad Américas, Proximidad Europa, Combustibles y Salud en 2024?",
+    "answer": "26,322 en Proximidad Américas, 2,778 en Proximidad Europa, 571 en Combustibles y 4,661 en Salud, para un total de 34,332 puntos de venta.",
+    "source_pages": [
+      21
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Cuántos puntos de venta tiene Proximidad Américas en México, Brasil, Colombia, Estados Unidos, Chile y Perú?",
+    "answer": "23,206 en México, 1,860 en Brasil, 569 en Colombia, 249 en Estados Unidos, 235 en Chile y 203 en Perú, para un total de 26,322 puntos de venta.",
+    "source_pages": [
+      21
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Desde hace cuántos años opera OXXO en Colombia?",
+    "answer": "15 años operando en Colombia, con 569 tiendas OXXO.",
+    "source_pages": [
+      22
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿En cuántos mercados operaba Juntos+ en 2024?",
+    "answer": "1.3 millones de compradores activos en 7 mercados.",
+    "source_pages": [
+      31
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿En cuántos países tiene presencia FEMSA?",
+    "answer": "Presencia en 18 países y más de 388,000 colaboradores.",
+    "source_pages": [
+      6,
+      10
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿En qué año se actualizó la estrategia de Coca-Cola FEMSA?",
+    "answer": "Seis prioridades estratégicas; la estrategia se actualizó en 2023 y 2024 fue el segundo capítulo de la transformación.",
+    "source_pages": [
+      28
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿En qué tres pilares se basa la estrategia de Spin?",
+    "answer": "Tres pilares estratégicos: lealtad (Spin Premia), pagos (Spin by OXXO) y plataforma de servicios financieros.",
+    "source_pages": [
+      5,
+      35
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué divisiones crecieron más de 10% en ingresos en 2024?",
+    "answer": "Coca-Cola FEMSA con 14.2%, Proximidad Europa con 14.2%, Combustibles con 11.7% y Proximidad Américas con 10.3%.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué divisiones registraron un crecimiento de ingresos de 14.2% en 2024?",
+    "answer": "Coca-Cola FEMSA y Proximidad Europa, ambas con 14.2%.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué divisiones reportaron utilidad bruta en 2024 y de cuánto fue cada una?",
+    "answer": "Proximidad Américas Ps. 136,993 millones, Coca-Cola FEMSA Ps. 128,736 millones, Salud Ps. 24,041 millones, Proximidad Europa Ps. 21,344 millones y Combustibles Ps. 7,935 millones.",
+    "source_pages": [
+      112
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué impulsó el aumento de 4.2% en ventas mismas-tienda de Proximidad Américas en 2024?",
+    "answer": "Un aumento de 5.7% en el ticket promedio y una disminución de 1.5% en el tráfico de mismas tiendas.",
+    "source_pages": [
+      114
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué margen de EBITDA ajustado tuvo Coca-Cola FEMSA en 2024?",
+    "answer": "Ps. 56 mil millones de EBITDA ajustado, con un margen de 20.1%.",
+    "source_pages": [
+      29
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué porcentaje de acciones recompró FEMSA en 2024?",
+    "answer": "Se completó la desinversión de negocios no estratégicos en 2024, con dividendos especiales de Ps. 10,091 millones y recompras de casi 3% de las acciones en circulación.",
+    "source_pages": [
+      3
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué porcentaje de la base de clientes representaban los usuarios de Juntos+ en 2024?",
+    "answer": "1.3 millones de clientes activos, más de 60% de la base de clientes.",
+    "source_pages": [
+      4,
+      27,
+      31
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué porcentaje de las ventas de Combustibles representó el canal B2B en 2024?",
+    "answer": "El canal B2B representó 18% de las ventas totales, con más de 7,000 clientes empresariales y más de 70,000 unidades suministradas.",
+    "source_pages": [
+      26
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué porcentaje de residuos recicló OXXO en sus tiendas y centros de distribución en 2024?",
+    "answer": "Se recicló más de 20% de los residuos de las tiendas y 85% de los de los centros de distribución.",
+    "source_pages": [
+      4
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué tamaño tenía el nuevo centro de distribución de Salud en Colombia?",
+    "answer": "Un centro de distribución nuevo en Colombia de 26,641 metros cuadrados, con capacidad para despachar 21,500 líneas y más de 120,000 unidades.",
+    "source_pages": [
+      26
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  },
+  {
+    "question": "¿Qué tres prioridades tiene FEMSA Forward?",
+    "answer": "Tres prioridades: invertir en las tres verticales principales con enfoque orgánico, desarrollar nuevas vías de creación de valor y optimizar la estructura de capital.",
+    "source_pages": [
+      3
+    ],
+    "type": "aggregation",
+    "reason": "Agregacion/sintesis: requiere calculo sobre varias tripletas (suma, participacion, ranking), no un hecho unico.",
+    "estado": "pendiente_revision"
+  }
+]
