@@ -60,7 +60,7 @@ femsa-rag-graph-memo/
 │   ├── extracted_triples*.jsonl  # Candidatas (revisión humana antes de cargar)
 │   ├── needs_computed_path.json  # Agregaciones que no son una tripleta
 │   └── data/chunks.jsonl     # Texto extraído, una línea JSON por página (se genera con make extract)
-└── memo/                 # Demo MEMO (Memory as a Model) a escala pequeña
+├── memo/                 # Demo MEMO (Memory as a Model) a escala pequeña
     ├── generate_reflections.py   # Regenera el dataset de reflexiones (determinista)
     ├── reflection_qa.jsonl       # 446 pares QA (run 1)
     ├── reflection_qa_v2.jsonl    # 1,414 ejemplos con paráfrasis (run 2; se genera con make augment-memo-v2)
@@ -72,9 +72,17 @@ femsa-rag-graph-memo/
     ├── eval_questions.json       # Las 12 preguntas con respuestas esperadas
     ├── results*.md / run_trace*.jsonl  # Resultados y trazas de cada corrida
     └── README.md                 # Runbook completo del demo MEMO
+└── rag_baseline/         # Baseline RAG vectorial (MiniLM + lector Qwen2.5-1.5B)
+    ├── retrieve.py           # Embeddings + top-5 por pregunta
+    ├── answer.py             # Reader (responde solo desde los chunks)
+    ├── score.py              # Scorer + clasificación de fallos
+    ├── results.md            # Tabla por pregunta, modos de fallo, veredicto
+    ├── retrieval.json        # Top-5 por pregunta (se genera con make rag-retrieve)
+    ├── run_trace.jsonl       # Respuestas del reader + contexto usado (se genera con make rag-answer)
+    └── README.md             # Runbook del baseline RAG
 ```
 
-Los detalles de cada parte están en `pipeline/README.md` y `memo/README.md`.
+Los detalles de cada parte están en `pipeline/README.md`, `memo/README.md` y `rag_baseline/README.md`.
 
 ---
 
@@ -87,11 +95,59 @@ Mismo corpus (FEMSA 2024), mismas 12 preguntas en 3 niveles (hecho directo, comp
 | **Grafo** (Cypher sobre tripletas semilla, Relate) | ~perfecto en nivel 1–2 **por construcción** | 0 |
 | **MEMO run 1** (0.5B, LoRA r=8, 1 época, 446 QA) | **0/12** | 6/12 |
 | **MEMO run 2** (0.5B, LoRA r=32, 3 épocas, 1,414 QA, EXEC 1.5B) | **2/12** (+1 parcial) | **2/12** |
-| **RAG vectorial** | **pendiente** (no se corrió; no se inventan cifras) | — |
+| **RAG vectorial** (MiniLM top-5 + lector Qwen2.5-1.5B) | **2/12** (correctas Q6 y Q11; techo real 9/12: 3 cifras esperadas no están en el informe; detalle en [rag_baseline/results.md](rag_baseline/results.md)) | **2/12** |
 
 El veredicto honesto: más datos (3.2×), más épocas (3×) y más LoRA (r=8 → r=32) fijaron las cifras simples y repetidas (571 estaciones, 307,197 vs 279,793) y bajaron las alucinaciones de 6/12 a 2/12, pero el sistema sigue fallando en todo lo que exige componer: sumar, comparar, atribuir un hecho a su división o nombrar una estrategia. En dos preguntas la memoria ya tenía el dato correcto y fue el ejecutivo quien lo estropeó al sintetizar. **La memoria en pesos es compresión con pérdida, y la pérdida se concentra justo donde se necesita precisión**: cifras exactas, comparaciones y agregaciones. El grafo no tiene ese problema porque la respuesta *es* el dato verificado.
 
 Eso no invalida a MEMO: el paper usa un modelo 28× más grande, ~3,000× más datos y un ejecutivo de 32B/Gemini. Lo que el demo muestra es el punto del post: para cifras exactas, el sistema necesita el dato afuera (grafo o retrieval), no dentro del modelo.
+
+---
+
+## 📏 Cómo reproducir las métricas
+
+Cada cifra de la tabla sale de correr el sistema contra las **mismas 12 preguntas** (`memo/eval_questions.json`). RAG y MEMO se puntúan con el mismo scorer (`memo/evaluate.py`: exactitud numérica + alucinación); el grafo se verifica con las 12 consultas Cypher de `pipeline/queries.cypher`. Todo en CPU.
+
+### Grafo: 12/12
+
+```bash
+make setup             # entorno
+make download          # PDF + texto + tripletas por reglas
+make load-relate       # carga el grafo (con el servidor corriendo en otra terminal:
+                       # relate serve --database ./pipeline/data/femsa.rl --bolt 7687 --auth none)
+make queries           # las 12 preguntas en Cypher
+```
+
+Resultado: las 12 consultas devuelven la respuesta esperada (ver `pipeline/queries.cypher`, que trae la respuesta esperada por pregunta).
+
+### RAG vectorial: 2/12
+
+```bash
+make setup             # entorno (incluye sentence-transformers para los embeddings)
+make download          # PDF + texto (los chunks viven en pipeline/data/chunks.jsonl)
+make rag-retrieve      # embeddings MiniLM + top-5 por pregunta (~1 min en CPU)
+make rag-answer        # reader Qwen2.5-1.5B en CPU, solo desde los chunks (~24 min)
+make rag-score         # escribe rag_baseline/results.md
+```
+
+Resultado: **2/12** (correctas Q6 y Q11), 2/12 con alucinación. Leer en `rag_baseline/results.md` (tabla por pregunta, modos de fallo y caveats). `make rag-answer` descarga el modelo 1.5B automáticamente (`make download-models`). Techo real sobre este set: 9/12 — las cifras esperadas de Q2 (+24.9%), Q7 (+27.5%) y Q9 (39.3%/35.8%/75.1%) no están en el informe (las dos primeras son del comunicado 4Q24; las terceras son participaciones calculadas).
+
+### MEMO run 1: 0/12
+
+```bash
+make train-memo        # SFT LoRA r=8, 1 época (~35 min en CPU)
+make eval-memo         # evaluación + control + puntuación
+```
+
+Resultado: **0/12**, 6/12 con alucinación. Leer en `memo/results.md` (control sin entrenar en `memo/results_control.md`).
+
+### MEMO run 2: 2/12
+
+```bash
+make train-memo-v2     # SFT LoRA r=32, 3 épocas (~4 h en CPU, reanudable por época)
+make eval-memo-v2      # evaluación + control + puntuación
+```
+
+Resultado: **2/12** (correctas Q4 y Q6, +1 parcial en Q3), 2/12 con alucinación. Leer en `memo/results_v2.md` (control en `memo/results_v2_control.md`).
 
 ---
 
@@ -108,6 +164,9 @@ make train-memo        # run 1: LoRA r=8, 1 época (~35 min en CPU)
 make eval-memo         # run 1: evaluación + control + puntuación
 make train-memo-v2     # run 2: LoRA r=32, 3 épocas (~4 h en CPU)
 make eval-memo-v2      # run 2: evaluación + control + puntuación
+make rag-retrieve      # RAG: embeddings MiniLM + top-5 (~1 min en CPU)
+make rag-answer        # RAG: reader Qwen2.5-1.5B en CPU (~24 min)
+make rag-score         # RAG: escribe rag_baseline/results.md (2/12)
 ```
 
 Ver `make help` para la lista completa.
@@ -122,6 +181,8 @@ Ver `make help` para la lista completa.
 * **El store de Relate** (`pipeline/data/femsa.rl`): se genera al correr el runbook del grafo.
 * **Los chunks extraídos** (`pipeline/data/chunks.jsonl`, 424 KB): se regeneran con `make extract`.
 * **El dataset v2 de MEMO** (`memo/reflection_qa_v2.jsonl`, 431 KB): se regenera de forma determinista con `make augment-memo-v2` a partir de `memo/reflection_qa.jsonl` (que sí está en el repo); `make train-memo-v2` y `make eval-memo-v2` ya lo generan automáticamente.
+* **El top-5 del RAG** (`rag_baseline/retrieval.json`, 198 KB): se regenera con `make rag-retrieve`.
+* **La traza del reader RAG** (`rag_baseline/run_trace.jsonl`, 123 KB): se regenera con `make rag-answer`.
 * **Logs de entrenamiento** (`*.log`): ruido de corrida, los resúmenes están en `memo/training_log_v2.json` y en los `results*.md`.
 
 ---

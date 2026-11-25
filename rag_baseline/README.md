@@ -53,10 +53,14 @@ memo/.venv/bin/python rag_baseline/score.py      # results.md
   `memo/evaluate.py`) + clasificación de fallos verificada a mano contra
   el corpus + `results.md`.
 - `retrieval.json` — top-5 por pregunta (página, score, texto completo) y
-  cobertura con tolerancia.
+  cobertura con tolerancia. **No está en el repo por tamaño** (198 KB, el
+  CLI de GitHub no acepta argumentos de más de ~128 KB); se regenera con
+  `make rag-retrieve`.
 - `run_trace.jsonl` — respuestas del reader + contexto condensado usado
   (campo `context`) + páginas recuperadas. Mismo formato que
-  `memo/run_trace*.jsonl`.
+  `memo/run_trace*.jsonl`. **No está en el repo por tamaño** (123 KB, el
+  payload JSON escapa por encima de ~128 KB); se regenera con
+  `make rag-answer`.
 - `results.md` — tabla por pregunta, por nivel, modos de fallo, comparación
   de los tres sistemas, veredicto y caveats.
 - `answer.log` — salida del reader (24 min).
@@ -110,7 +114,7 @@ memo/.venv/bin/python rag_baseline/score.py      # results.md
 
 ## Para el repo
 
-Estos archivos van a `rag_baseline/` en `femsa-rag-graph-memo` en el
-próximo push (aún no pusheado). El README raíz del repo dice todavía
-"RAG vectorial: pendiente" — hay que actualizar esa línea a **2/12** con
-el enlace a `rag_baseline/results.md` cuando se pushee.
+Estos archivos están en `rag_baseline/` en `femsa-rag-graph-memo`. El README
+raíz del repo dice **RAG vectorial: 2/12** con enlace a `rag_baseline/results.md`.
+`retrieval.json` y `run_trace.jsonl` no están en el repo por tamaño (ver
+"Archivos" arriba); se regeneran con `make rag-retrieve` y `make rag-answer`.
