@@ -1,0 +1,132 @@
+{
+  "note": "Estas 12 preguntas NO estan en el dataset de entrenamiento (reflection_qa.jsonl). La pregunta 3 tiene una tension documentada: la ontologia dice 'Aperturas 1,236', pero el MD&A (p.112) dice 1,596 tiendas netas nuevas y 23,206 es OXXO Mexico (la division suma 26,322 puntos de venta). El evaluador marca ese caso aparte.",
+  "questions": [
+    {
+      "expected": "Ps. 781,585 millones, +11.2%.",
+      "expected_numbers": [
+        "781585",
+        "11.2"
+      ],
+      "id": "Q1",
+      "level": 1,
+      "question": "¿Cuáles fueron los ingresos totales consolidados de FEMSA en 2024 y cuánto crecieron vs 2023?"
+    },
+    {
+      "expected": "8.6 millones (+24.9%).",
+      "expected_numbers": [
+        "8.6",
+        "24.9"
+      ],
+      "id": "Q2",
+      "level": 1,
+      "question": "¿Cuántos usuarios activos tuvo Spin by OXXO en 2024?"
+    },
+    {
+      "expected": "23,206 tiendas; 1,236 aperturas.",
+      "expected_numbers": [
+        "23206",
+        "1236"
+      ],
+      "ground_truth_note": "Segun el MD&A (p.112): 1,596 tiendas netas nuevas en 2024; 23,206 es OXXO Mexico (la division Proximidad Americas suma 26,322 puntos de venta). La cifra '1,236 aperturas' no aparece en el informe. Si el modelo responde 1,596, es mas correcto que la respuesta esperada.",
+      "id": "Q3",
+      "level": 1,
+      "question": "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024 y cuántas aperturas hubo?"
+    },
+    {
+      "expected": "571.",
+      "expected_numbers": [
+        "571"
+      ],
+      "id": "Q4",
+      "level": 1,
+      "question": "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?"
+    },
+    {
+      "expected": "Empate nominal: ambas +14.2% (trampa deliberada).",
+      "expected_numbers": [
+        "14.2",
+        "14.2"
+      ],
+      "id": "Q5",
+      "level": 2,
+      "question": "¿Qué división tuvo el mayor crecimiento porcentual de ingresos en 2024: Proximidad Europa o Coca-Cola FEMSA?"
+    },
+    {
+      "expected": "Proximidad Américas, Ps. 307,200 millones vs Ps. 279,800 millones.",
+      "expected_numbers": [
+        "307200",
+        "279800"
+      ],
+      "ground_truth_note": "Valores exactos del MD&A: 307,197 y 279,793 (la ontologia los redondea). Se acepta el valor exacto o el redondeado.",
+      "id": "Q6",
+      "level": 2,
+      "question": "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?"
+    },
+    {
+      "expected": "Spin Premia en absoluto (24.6 millones vs 8.6 millones) y en % (+27.5% vs +24.9%).",
+      "expected_numbers": [
+        "24.6",
+        "8.6",
+        "27.5",
+        "24.9"
+      ],
+      "id": "Q7",
+      "level": 2,
+      "question": "¿Qué creció más en usuarios, Spin by OXXO o Spin Premia?"
+    },
+    {
+      "expected": "México, Colombia, Chile, Perú (además de negocios en Estados Unidos).",
+      "expected_numbers": [],
+      "id": "Q8",
+      "level": 2,
+      "question": "¿En qué países opera Proximidad Américas según el informe?",
+      "expected_keywords": [
+        "México",
+        "Colombia",
+        "Chile",
+        "Perú"
+      ]
+    },
+    {
+      "expected": "~75.1% (39.3% + 35.8%, aproximado por redondeo).",
+      "expected_numbers": [
+        "75.1",
+        "39.3",
+        "35.8"
+      ],
+      "id": "Q9",
+      "level": 3,
+      "question": "¿Qué porcentaje de los ingresos consolidados 2024 representan Proximidad Américas y Coca-Cola FEMSA juntas?"
+    },
+    {
+      "expected": "FEMSA Forward; el ecosistema digital centrado en el cliente se crea a través de Spin.",
+      "expected_numbers": [],
+      "id": "Q10",
+      "level": 3,
+      "question": "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+      "expected_keywords": [
+        "FEMSA Forward"
+      ]
+    },
+    {
+      "expected": "Digital@FEMSA evolucionó a Spin.",
+      "expected_numbers": [],
+      "id": "Q11",
+      "level": 3,
+      "question": "¿Cómo evolucionó la iniciativa digital de FEMSA en 2024?",
+      "expected_keywords": [
+        "Spin"
+      ]
+    },
+    {
+      "expected": "Salud: 'año complicado', +5.8% (el menor crecimiento de las divisiones reportadas).",
+      "expected_numbers": [
+        "5.8"
+      ],
+      "id": "Q12",
+      "level": 3,
+      "question": "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?"
+    }
+  ],
+  "source": "files/ontologia-y-preguntas-femsa-2024.md, seccion 3 (12 preguntas con respuesta esperada)"
+}

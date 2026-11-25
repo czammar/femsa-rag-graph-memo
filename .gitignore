@@ -7,6 +7,8 @@ __pycache__/
 # Datos y artefactos que se regeneran (ver README: "Qué no está en el repo")
 pipeline/data/*.pdf
 pipeline/data/*.rl
+pipeline/data/chunks.jsonl
+memo/reflection_qa_v2.jsonl
 memo/models/
 memo/memory_model/
 memo/memory_model_v2/

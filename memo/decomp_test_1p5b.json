@@ -1,0 +1,127 @@
+{
+  "model": "memo/models/Qwen2.5-1.5B-Instruct",
+  "llm_success": 12,
+  "results": [
+    {
+      "id": "Q1",
+      "question": "¿Cuáles fueron los ingresos totales consolidados de FEMSA en 2024 y cuánto crecieron vs 2023?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+        "¿Cuáles fueron los ingresos de Proximidad Américas en 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q2",
+      "question": "¿Cuántos usuarios activos tuvo Spin by OXXO en 2024?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuál es el número total de estaciones de OXXO GAS que tenía en 2024?",
+        "¿Cuántos usuarios activos tenían Spin by OXXO en 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q3",
+      "question": "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024 y cuántas aperturas hubo?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuál es el número total de estaciones de OXXO GAS al cierre de 2024?",
+        "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q4",
+      "question": "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q5",
+      "question": "¿Qué división tuvo el mayor crecimiento porcentual de ingresos en 2024: Proximidad Europa o Coca-Cola FEMSA?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuál fue el número total de estaciones de OXXO GAS al cierre de 2024?",
+        "¿Cuál es el número exacto de estaciones de OXXO GAS que operaban al cierre de 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q6",
+      "question": "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuál fue el ingreso de Proximidad Américas en 2024?",
+        "¿Cuál fue el ingreso de Coca-Cola FEMSA en 2024?",
+        "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q7",
+      "question": "¿Qué creció más en usuarios, Spin by OXXO o Spin Premia?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuál fue el número total de estaciones de OXXO GAS al cierre de 2024?",
+        "¿Cuántas estaciones de OXXO GAS se añadieron en 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q8",
+      "question": "¿En qué países opera Proximidad Américas según el informe?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+        "¿Cuáles fueron los ingresos de Proximidad Américas en 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q9",
+      "question": "¿Qué porcentaje de los ingresos consolidados 2024 representan Proximidad Américas y Coca-Cola FEMSA juntas?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Cuál fue el ingreso total de Proximidad Américas en 2024?",
+        "¿Cuál fue el ingreso total de Coca-Cola FEMSA en 2024?",
+        "¿Cuál es el porcentaje que representa Proximidad Américas en los ingresos totales de FEMSA en 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q10",
+      "question": "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+        "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q11",
+      "question": "¿Cómo evolucionó la iniciativa digital de FEMSA en 2024?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Qué acciones tomó FEMSA para mejorar su iniciativa digital en 2024?",
+        "¿Cuál fue el número total de estaciones de servicio OXXO GAS al cierre de 2024?"
+      ],
+      "method": "llm"
+    },
+    {
+      "id": "Q12",
+      "question": "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?",
+      "llm_decomposed": true,
+      "sub_questions": [
+        "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?",
+        "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?"
+      ],
+      "method": "llm"
+    }
+  ]
+}

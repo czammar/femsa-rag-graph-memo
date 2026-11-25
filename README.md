@@ -59,11 +59,11 @@ femsa-rag-graph-memo/
 │   ├── qa_to_triples.py      # Convierte pares QA en tripletas candidatas
 │   ├── extracted_triples*.jsonl  # Candidatas (revisión humana antes de cargar)
 │   ├── needs_computed_path.json  # Agregaciones que no son una tripleta
-│   └── data/chunks.jsonl     # Texto extraído, una línea JSON por página
+│   └── data/chunks.jsonl     # Texto extraído, una línea JSON por página (se genera con make extract)
 └── memo/                 # Demo MEMO (Memory as a Model) a escala pequeña
     ├── generate_reflections.py   # Regenera el dataset de reflexiones (determinista)
     ├── reflection_qa.jsonl       # 446 pares QA (run 1)
-    ├── reflection_qa_v2.jsonl    # 1,414 ejemplos con paráfrasis (run 2)
+    ├── reflection_qa_v2.jsonl    # 1,414 ejemplos con paráfrasis (run 2; se genera con make augment-memo-v2)
     ├── augment_v2.py             # 446 → 1,414 ejemplos
     ├── train_memory.py           # SFT LoRA run 1 (r=8, 1 época)
     ├── train_memory_v2.py        # SFT LoRA run 2 (r=32, 3 épocas)
@@ -120,6 +120,8 @@ Ver `make help` para la lista completa.
 * **Los pesos de los modelos** (Qwen2.5-0.5B y 1.5B, ~4 GB): se descargan con `make download-models` desde Hugging Face.
 * **Los adaptadores LoRA entrenados y los checkpoints** (28 MB – 79 MB por adaptador, checkpoints de hasta ~900 MB): binarios grandes; se regeneran con `make train-memo` / `make train-memo-v2`.
 * **El store de Relate** (`pipeline/data/femsa.rl`): se genera al correr el runbook del grafo.
+* **Los chunks extraídos** (`pipeline/data/chunks.jsonl`, 424 KB): se regeneran con `make extract`.
+* **El dataset v2 de MEMO** (`memo/reflection_qa_v2.jsonl`, 431 KB): se regenera de forma determinista con `make augment-memo-v2` a partir de `memo/reflection_qa.jsonl` (que sí está en el repo); `make train-memo-v2` y `make eval-memo-v2` ya lo generan automáticamente.
 * **Logs de entrenamiento** (`*.log`): ruido de corrida, los resúmenes están en `memo/training_log_v2.json` y en los `results*.md`.
 
 ---

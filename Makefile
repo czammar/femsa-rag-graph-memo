@@ -114,14 +114,18 @@ eval-memo: sync
 	$(PY) memo/evaluate.py --trace memo/run_trace.jsonl --out memo/results.md
 	$(PY) memo/evaluate.py --trace memo/run_trace_control.jsonl --out memo/results_control.md
 
+## Generate MEMO run 2 dataset (1,414 examples; deterministic, from reflection_qa.jsonl)
+augment-memo-v2: sync
+	$(PY) memo/augment_v2.py
+
 ## Train MEMO run 2: LoRA r=32, 3 epochs (~4 h CPU, resumable per epoch)
-train-memo-v2: sync download-models
+train-memo-v2: sync download-models augment-memo-v2
 	$(PY) memo/train_memory_v2.py --data memo/reflection_qa_v2.jsonl --model memo/models/Qwen2.5-0.5B-Instruct --lora-r 32 --lora-alpha 64 --epochs 1 --no-grad-checkpointing --max-seconds 6600 --out memo/memory_model_v2_ep1
 	$(PY) memo/train_memory_v2.py --data memo/reflection_qa_v2.jsonl --model memo/models/Qwen2.5-0.5B-Instruct --lora-r 32 --lora-alpha 64 --epochs 1 --no-grad-checkpointing --max-seconds 6600 --init-adapter memo/memory_model_v2_ep1 --out memo/memory_model_v2_ep2
 	$(PY) memo/train_memory_v2.py --data memo/reflection_qa_v2.jsonl --model memo/models/Qwen2.5-0.5B-Instruct --lora-r 32 --lora-alpha 64 --epochs 1 --no-grad-checkpointing --max-seconds 6600 --init-adapter memo/memory_model_v2_ep2 --out memo/memory_model_v2
 
 ## Evaluate MEMO run 2 + control, then score
-eval-memo-v2: sync
+eval-memo-v2: sync augment-memo-v2
 	$(PY) memo/executive_v2.py --all --adapter memo/memory_model_v2 --out memo/run_trace_v2.jsonl
 	$(PY) memo/executive_v2.py --all --control --out memo/run_trace_v2_control.jsonl
 	$(PY) memo/evaluate.py --trace memo/run_trace_v2.jsonl --eval memo/eval_questions.json --qa memo/reflection_qa_v2.jsonl --out memo/results_v2.md

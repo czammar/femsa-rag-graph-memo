@@ -1,0 +1,11 @@
+{
+  "v1_rows": 446,
+  "v2_rows": 1414,
+  "key_fact_rows_v1": 89,
+  "paraphrases_kept": 968,
+  "dropped_for_leakage_jaccard>=0.80": 0,
+  "key_numbers_tracked": 29,
+  "min_appearances_per_key_number": 12,
+  "max_appearances_per_key_number": 52,
+  "dropped_examples": []
+}
