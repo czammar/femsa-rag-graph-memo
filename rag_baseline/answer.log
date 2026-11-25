@@ -1,0 +1,21 @@
+loading reader memo/models/Qwen2.5-1.5B-Instruct (bf16, CPU)...
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]
+Loading weights:  25%|██▌       | 85/338 [00:00<00:00, 819.93it/s]
+Loading weights:  83%|████████▎ | 282/338 [00:00<00:00, 1304.56it/s]
+Loading weights: 100%|██████████| 338/338 [00:00<00:00, 1344.41it/s]
+model loaded in 8.1s
+Q1 -> Los ingresos totales consolidados de FEMSA en 2024 ascendieron a Ps. 40,236 millones, un incremento de 31% respecto al año anterior.
+Q2 -> 8.6 millones
+Q3 -> No lo sé.
+Q4 -> No lo sé.
+Q5 -> Para determinar qué división tuvo el mayor crecimiento porcentual de ingresos en 2024, necesitamos analizar los datos proporcionados en los fragmentos del infor
+Q6 -> En 2024, la División Proximidad Américas aportó más ingresos que Coca-Cola FEMSA. Los ingresos totales de Proximidad Américas fueron Ps. 307,197 millones, mient
+Q7 -> Spin Premia creció más en usuarios que Spin by OXXO. Según el informe, Spin Premia tiene 24.6 millones de activos y Spin by OXXO tiene 8.6 millones de activos.
+Q8 -> Según el informe, Proximidad Américas opera en México y Colombia.
+Q9 -> Según el informe, Proximidad Américas y Coca-Cola FEMSA reportaron un ingreso consolidado de Ps. 23,729 millones en 2024, mientras que Proximidad Europea tuvo u
+Q10 -> Retail, Bebidas y el ecosistema digital de FEMSA se articulan mediante un modelo de valor centrado en el cliente. Se crean este ecosistema basándose en datos y 
+Q11 -> Durante el año, definimos un claro negocio estratégico para Digital@FEMSA, ahora llamado Spin, para impulsar su crecimiento con un plan de cinco años alineado c
+Q12 -> La división que tuvo el año más complicado en 2024 fue Argentina, donde el ingreso cayó un 10%.
+trace -> rag_baseline/run_trace.jsonl (1438.1s total)

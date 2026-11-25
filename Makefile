@@ -14,7 +14,8 @@ PY := $(VENV_BIN)/python
 
 .PHONY: all check-python-version get-python-version install sync setup clean help \
 	download extract build-cypher load-relate queries download-models \
-	train-memo train-memo-v2 eval-memo eval-memo-v2
+	train-memo train-memo-v2 eval-memo eval-memo-v2 \
+	rag-retrieve rag-answer rag-score
 
 ## Check is python version of the project
 check-python-version:
@@ -130,3 +131,15 @@ eval-memo-v2: sync augment-memo-v2
 	$(PY) memo/executive_v2.py --all --control --out memo/run_trace_v2_control.jsonl
 	$(PY) memo/evaluate.py --trace memo/run_trace_v2.jsonl --eval memo/eval_questions.json --qa memo/reflection_qa_v2.jsonl --out memo/results_v2.md
 	$(PY) memo/evaluate.py --trace memo/run_trace_v2_control.jsonl --eval memo/eval_questions.json --qa memo/reflection_qa_v2.jsonl --out memo/results_v2_control.md
+
+## Retrieve top-5 chunks per question with MiniLM embeddings (~1 min CPU)
+rag-retrieve: download
+	$(PY) rag_baseline/retrieve.py
+
+## Answer the 12 questions with the Qwen2.5-1.5B reader, only from retrieved chunks (~24 min CPU)
+rag-answer: rag-retrieve download-models
+	$(PY) rag_baseline/answer.py
+
+## Score the RAG baseline and write rag_baseline/results.md
+rag-score: rag-answer
+	$(PY) rag_baseline/score.py
