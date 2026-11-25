@@ -1,0 +1,21 @@
+# Entorno virtual y cachés
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+
+# Datos y artefactos que se regeneran (ver README: "Qué no está en el repo")
+pipeline/data/*.pdf
+pipeline/data/*.rl
+memo/models/
+memo/memory_model/
+memo/memory_model_v2/
+memo/memory_model_ckpt/
+memo/memory_model_v2_ckpt/
+memo/memory_model_v2_ep1/
+memo/memory_model_v2_ep1_ckpt/
+memo/memory_model_v2_ep2/
+memo/memory_model_v2_ep2_ckpt/
+
+# Sistema
+.DS_Store
