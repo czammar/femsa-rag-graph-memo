@@ -49,11 +49,11 @@ nombres de scripts del repo ni `sys.path.insert` (el chequeo 7 del validador).
 | 01 | `01_setup_y_extraccion.ipynb` | Drive, repo, dependencias, descarga del PDF y extracción (151 págs.) | solo verifica |
 | 02 | `02_grafo_relate.ipynb` | Cypher de carga, instala Relate, carga el grafo (27 nodos, 39 relaciones), 12 preguntas | no |
 | 03 | `03_memo_entrenamiento.ipynb` | Dataset expandido v3 (~3,300 pares, generado inline) + entreno MEMORY 1.5B con LoRA en GPU | no (entrena con HF) |
-| 04 | `04_memo_evaluacion.ipynb` | Protocolo MEMO (ejecutivo vía Ollama) + control + scorer; genera set de eval ampliado (opcional) | sí, ejecutivo |
-| 05 | `05_rag_baseline.ipynb` | Retrieval denso + lector vía Ollama + scorer | sí, lector |
-| 06 | `06_rag_hibrido_y_expansion.ipynb` | BM25 híbrido (RRF k=60) + expansión de queries + lector vía Ollama + scorers | sí, lector |
-| 07 | `07_rag_agentico.ipynb` | RAG agéntico JUEZ: retrieval híbrido top-10 + un llamado al juez por pregunta (califica los 10 chunks de golpe) + lector solo con los seleccionados; máx. 3 reintentos, abstención si no hay veredictos | sí, juez y lector |
-| 08 | `08_ragas.ipynb` | RAGAS deterministas + run real con la librería `ragas` y juez vía Ollama | sí, juez |
+| 04 | `04_memo_evaluacion.ipynb` | Protocolo MEMO (ejecutivo vía Ollama) + control + scorer sobre el set de 100 (EVAL_SET="12" para las 12 originales) | sí, ejecutivo |
+| 05 | `05_rag_baseline.ipynb` | Retrieval denso + lector vía Ollama + scorer (set de 100) | sí, lector |
+| 06 | `06_rag_hibrido_y_expansion.ipynb` | BM25 híbrido (RRF k=60) + expansión de queries + lector vía Ollama + scorers (set de 100) | sí, lector |
+| 07 | `07_rag_agentico.ipynb` | RAG agéntico JUEZ: retrieval híbrido top-10 + un llamado al juez por pregunta (califica los 10 chunks de golpe) + lector solo con los seleccionados; máx. 3 reintentos, abstención si no hay veredictos (set de 100) | sí, juez y lector |
+| 08 | `08_ragas.ipynb` | RAGAS deterministas + run real con la librería `ragas` y juez vía Ollama (set de 100) | sí, juez |
 
 ## Datos procesados: primero en Drive, si no, súbelos
 
@@ -70,8 +70,8 @@ informe extraídas) lleva las mismas celdas de datos, en este orden:
    de la propia celda (descarga el PDF ~19 MB y extrae las 151 páginas,
    ~1–2 min). Es el último recurso, no el camino principal.
 
-`triples_seed.json` y `eval_questions.json` vienen con el clon del repo: no
-hace falta subirlos.
+`triples_seed.json`, `eval_questions.json` y `eval_questions_100.json` vienen
+con el clon del repo: no hace falta subirlos.
 
 Los insumos que produce una etapa anterior **no** se regeneran ni se suben
 por defecto: se verifican con una celda de prerrequisitos que falla con un
@@ -80,12 +80,13 @@ mensaje claro si faltan, diciendo qué notebook los produce:
 - **NB04** verifica que exista el adaptador MEMORY del NB03
   (`memo/memory_model_colab`): sin adaptador entrenado, no hay nada que evaluar.
 - **NB08** verifica las 3 trazas y los 3 retrievals de los NB05/06
-  (`run_trace_colab.jsonl`, `run_trace_hybrid_colab.jsonl`,
-  `run_trace_expanded_colab.jsonl`, `retrieval.json`,
-  `retrieval_hybrid.json`, `retrieval_expanded.json`): si faltan, te pide
-  subirlos; si existen los de Colab, los **alinea** copiándolos a los nombres
-  de CPU (`run_trace.jsonl`, ...) que espera el cálculo determinista inline.
-  Sin trazas no hay métricas.
+  (con EVAL_SET="100": `run_trace_colab_100.jsonl`,
+  `run_trace_hybrid_colab_100.jsonl`, `run_trace_expanded_colab_100.jsonl`,
+  `retrieval_100.json`, `retrieval_hybrid_100.json`,
+  `retrieval_expanded_100.json`): si faltan, te pide subirlos; si existen
+  los de Colab, los **alinea** copiándolos a los nombres que espera el
+  cálculo determinista inline (`run_trace_100.jsonl`, ...). Sin trazas no
+  hay métricas.
 
 ## Qué guarda cada notebook en Drive
 
@@ -100,11 +101,11 @@ Los logs de la sesión (`ollama.log`, `relate.log`) también se copian al repo.
 | 01 | `pipeline/data/chunks.jsonl` (151 páginas), `pipeline/data/FEMSA_2024_Annual_Report_EN.pdf`, `pipeline/extracted_triples.jsonl` (13 candidatas por reglas, pendientes de revisión) |
 | 02 | `pipeline/data/femsa.rl` (store Relate: 27 nodos, 39 relaciones), `pipeline/load_graph.cypher`, `pipeline/schema.cypher`, `relate.log` |
 | 03 | `memo/memory_model_colab` (adaptador LoRA final, MEMORY 1.5B), `memo/memory_model_colab_ckpt` (checkpoints cada 25 pasos), `memo/reflection_qa_v3.jsonl` (dataset v3) + v2 y v1 |
-| 04 | `memo/run_trace_colab.jsonl`, `memo/run_trace_colab_control.jsonl`, `memo/results_colab.md`, `memo/results_colab_control.md`, `memo/eval_questions_expanded.json` (si se generó; `needs_review: true`) |
-| 05 | `rag_baseline/retrieval.json` (denso top-5), `rag_baseline/run_trace_colab.jsonl`, `rag_baseline/results_colab.md` |
-| 06 | `rag_baseline/retrieval_hybrid.json`, `retrieval_expanded.json`, `run_trace_hybrid_colab.jsonl`, `run_trace_expanded_colab.jsonl`, `results_hybrid_colab.md`, `results_expanded_colab.md`, `expanded_queries.json` |
-| 07 | `rag_baseline/retrieval_hybrid_k10.json` (top-10), `agentic_rag/run_trace_judge_colab.jsonl`, `agentic_rag/results_agentic_judge_colab.md` |
-| 08 | `rag_baseline/ragas/metrics_ragas.json` (deterministas, actualizadas en Colab), `rag_baseline/ragas/metrics_ragas_llm_colab.json` (run real con juez Ollama, solo si completa), `ground_truth_evidence.json` |
+| 04 | `memo/run_trace_colab_100.jsonl`, `memo/run_trace_colab_control_100.jsonl`, `memo/results_colab_100.md`, `memo/results_colab_control_100.md`, `memo/eval_questions_expanded.json` (si se generó; `needs_review: true`) |
+| 05 | `rag_baseline/retrieval_100.json` (denso top-5), `rag_baseline/run_trace_colab_100.jsonl`, `rag_baseline/results_colab_100.md` |
+| 06 | `rag_baseline/retrieval_hybrid_100.json`, `retrieval_expanded_100.json`, `run_trace_hybrid_colab_100.jsonl`, `run_trace_expanded_colab_100.jsonl`, `results_hybrid_colab_100.md`, `results_expanded_colab_100.md`, `expanded_queries_100.json` |
+| 07 | `rag_baseline/retrieval_hybrid_k10_100.json` (top-10), `agentic_rag/run_trace_judge_colab_100.jsonl`, `agentic_rag/results_agentic_judge_colab_100.md` |
+| 08 | `rag_baseline/ragas/metrics_ragas_100.json` (deterministas, actualizadas en Colab), `rag_baseline/ragas/metrics_ragas_llm_colab_100.json` (run real con juez Ollama, solo si completa), `ground_truth_evidence_100.json` |
 
 ## Antes de empezar
 
@@ -201,9 +202,42 @@ lógica que el notebook 07 lleva inline, para las corridas en CPU; el
 notebook no importa ni ejecuta esos scripts. El notebook 07 no corre
 nada en este sandbox: la evaluación del juez corre **solo en Colab**.
 
+## Set de evaluación: 100 preguntas (EVAL_SET)
+
+El examen ya no son 12 preguntas: son **100** (`memo/eval_questions_100.json`):
+las 12 originales sin cambios (Q1–Q12) + 88 nuevas (Q13–Q100), reparto
+**Nivel 1: 40 · Nivel 2: 30 · Nivel 3: 30**. Cada cifra esperada se verificó
+por grep literal en el corpus (`memo/build_eval_100.py` — falla si alguna
+no aparece; las de nivel 3 se verifican por sus insumos + fórmula) y cada
+pregunta lleva sus páginas de evidencia. La evidencia para RAGAS está en
+`rag_baseline/ragas/ground_truth_evidence_100.json`. El detalle (trampas,
+conflictos, solape con el entrenamiento) está en
+`files/ontologia-y-preguntas-femsa-2024.md`, sección 6.
+
+- **Parámetro `EVAL_SET`** (celda de parámetros de los notebooks 03–08):
+  `"100"` (default) o `"12"` (el set original). Con `"12"` todo vuelve a
+  los nombres de archivo sin sufijo; con `"100"` las salidas llevan `_100`
+  (`run_trace_colab_100.jsonl`, `results_colab_100.md`,
+  `metrics_ragas_100.json`, ...) y **no se tocan los archivos de 12**.
+- **El scorer no hardcodea el total**: usa `len(rows)` (y `len(by_level[lv])`
+  por nivel). El conjunto de números verificados incluye además las cifras
+  esperadas del propio set — si no, con 100 preguntas las respuestas
+  correctas nuevas se marcarían como alucinación.
+- **NB03** (entrenamiento) chequea la fuga contra el set de 100: 10 de las
+  88 nuevas tienen casi-duplicados en el dataset de entrenamiento, así que
+  esos pares se excluyen al regenerar los datasets en Colab.
+- **Techo del set de 100: 97/100.** Tres preguntas tienen cifras esperadas
+  fuera del corpus y no pueden salir «correctas» por el scorer: Q2 (+24.9%),
+  Q7 (+27.5%/+24.9%, del comunicado 4Q24) y Q9 (39.3%/35.8%/75.1%,
+  participaciones calculadas). El techo del set de 12 era 9/12 por las
+  mismas tres preguntas.
+- **NB08**: con el set de 100, `EXACTNESS` queda vacío (no hay run previo)
+  y se llena tras el run; con `"12"` usa los veredictos publicados.
+
 ## Las dos mejoras que permite Colab
 
-1. **Más preguntas:** el notebook 04 genera un set de evaluación ampliado
+1. **Más preguntas:** el set de evaluación ya es de 100 (ver sección
+   anterior). El notebook 04 además puede generar un set ampliado *extra*
    desde las tripletas semilla (plantillas por tipo de tripleta). Cada cifra
    esperada se verifica por grep literal en el corpus: lo que no aparece
    literal, se descarta — nunca se adivina. La salida lleva
@@ -215,11 +249,13 @@ nada en este sandbox: la evaluación del juez corre **solo en Colab**.
 
 ## Mismo scorer, mismas reglas, en todas partes
 
-- Mismas 12 preguntas (`memo/eval_questions.json`), misma lógica de scorer
-  (inline en cada notebook, tomada de `memo/evaluate.py` y sus derivados
-  en `rag_baseline/` y `agentic_rag/`).
-- Techo real **9/12** (3 cifras esperadas no están en el informe), regla Q3
-  con **1,596** aperturas netas, conflicto de ground-truth Q7 documentado.
+- Mismas 100 preguntas por defecto (`memo/eval_questions_100.json`;
+  `EVAL_SET="12"` vuelve a las 12 de `memo/eval_questions.json`), misma
+  lógica de scorer (inline en cada notebook, tomada de `memo/evaluate.py`
+  y sus derivados en `rag_baseline/` y `agentic_rag/`).
+- Techo real **97/100** (Q2, Q7 y Q9 tienen cifras esperadas fuera del
+  informe; con el set de 12 era 9/12), regla Q3 con **1,596** aperturas
+  netas, conflicto de ground-truth Q7 documentado (y su cara en Q49).
 - Las cifras RAGAS deterministas siguen siendo las citables si el run real
   con juez Ollama no completa; el notebook 08 compara ambos si completa.
 
@@ -284,6 +320,11 @@ que compilan (`py_compile` OK).
   fabricada en `/tmp` —solo verifica la lógica del scorer, no son resultados—:
   Q4 correcta con precisión de selección 1.00, Q1 incorrecta por fallo del
   juez tras 3 intentos, con su abstención.
+- El set de 100 está verificado: `memo/build_eval_100.py` pasa con 0 fallos
+  (100 preguntas, L1 40 / L2 30 / L3 30, originales intactos, evidencia en
+  todas); `validate_notebooks.py` pasa; el scorer parcheado
+  (`memo/evaluate.py`) reproduce los veredictos del run 2 de MEMO (2/12)
+  sobre la traza real.
 - Ningún notebook depende de pasos de máquina local.
 
 **Sin probar (hay que verificar en la primera corrida en Colab):**

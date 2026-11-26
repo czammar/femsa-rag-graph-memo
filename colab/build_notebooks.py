@@ -224,8 +224,8 @@ def data_ensure_cells():
         "último recurso, no el camino principal. La lógica es la de "
         "`pipeline/extract.py` del repo, copiada en la celda: el notebook no ejecuta "
         "scripts del repo.\n\n"
-        "`triples_seed.json` y `eval_questions.json` vienen con el clon del repo: no hace "
-        "falta subirlos."
+        "`triples_seed.json`, `eval_questions.json` y `eval_questions_100.json` vienen con "
+        "el clon del repo: no hace falta subirlos."
     )
 
     _DATA_CODE = r"""
@@ -385,6 +385,10 @@ for _log in ["ollama.log", "ollama_error.log", "relate.log"]:
 ENTRIES = %ENTRIES%
 total_bytes, missing = 0, []
 for rel, label, required in ENTRIES:
+    # {SUF}/{N_Q} se resuelven con los parametros del notebook (EVAL_SET);
+    # en notebooks sin esos parametros valen "" y 12.
+    rel = rel.format(SUF=globals().get("SUF", ""), N_Q=globals().get("N_Q", 12))
+    label = label.format(SUF=globals().get("SUF", ""), N_Q=globals().get("N_Q", 12))
     p = os.path.join(REPO, rel)
     if os.path.isdir(p):
         nf, tb = _list_dir(p)
@@ -1420,6 +1424,8 @@ def build_03():
         drive_mount_cell(),
         params_cell("""
 # --- Parametros de MEMO (Colab, GPU T4) ---
+EVAL_SET = "100"   # set de evaluacion: "100" (default) o "12" (original)
+EVAL_FILE = "eval_questions_100.json" if EVAL_SET == "100" else "eval_questions.json"
 MODEL_MEMORY = "Qwen/Qwen2.5-1.5B-Instruct"   # MEMORY: 1.5B (en CPU era 0.5B)
 DATA_V3 = REPO + "/memo/reflection_qa_v3.jsonl"
 DATA = DATA_V3  # dataset que entrena la celda 5 (v3); TRAIN_CELL lo lee como DATA
@@ -2641,24 +2647,24 @@ main_v1()
         md("## 2. Dataset v2: 446 → 1,414 (paráfrasis de pregunta)\n\n"
            "La lógica de aumento vive **en la celda siguiente** (antes en "
            "`memo/augment_v2.py`): paráfrasis solo de la pregunta (la respuesta se "
-           "copia byte-idéntica), con chequeo de fuga por Jaccard contra las 12 "
+           "copia byte-idéntica), con chequeo de fuga por Jaccard contra las preguntas del set (EVAL_FILE) "
            "preguntas de evaluación y verificación de que ninguna respuesta cambió "
            "sus números. Salida: `memo/reflection_qa_v2.jsonl` (1,414 pares)."),
         code(r'''
 # Dataset v2: 446 -> 1,414 (parafrasis solo de la pregunta)
 # Logica de aumento inline: la respuesta se copia byte-identica, asi que
-# ninguna cifra puede cambiar. Cada parafrasis se chequea contra las 12
+# ninguna cifra puede cambiar. Cada parafrasis se chequea contra las del set (EVAL_FILE)
 # preguntas de evaluacion (Jaccard >= 0.80 se descarta) y cada cifra clave
 # debe aparecer >= 3 veces. Los helpers de aqui (tokens, jaccard, framing,
 # swap, candidates, norm_num_tokens) los reutiliza la celda 3.
-# Lee: memo/reflection_qa.jsonl, memo/eval_questions.json,
+# Lee: memo/reflection_qa.jsonl, memo/<EVAL_FILE>,
 #      pipeline/triples_seed.json
 # Escribe: memo/reflection_qa_v2.jsonl + memo/augment_report.json
 
 import json, re, unicodedata
 
 BASE = REPO + "/memo/reflection_qa.jsonl"
-EVAL = REPO + "/memo/eval_questions.json"
+EVAL = REPO + "/memo/" + EVAL_FILE
 TRIPLES = REPO + "/pipeline/triples_seed.json"
 OUT = REPO + "/memo/reflection_qa_v2.jsonl"
 REPORT = REPO + "/memo/augment_report.json"
@@ -2823,7 +2829,7 @@ main_v2()
            "definidos inline en la celda 2 (`tokens`, `jaccard`, `candidates`, "
            "lógica de `memo/augment_v2.py`) y añade más patrones de paráfrasis "
            "(más marcos y más trueques). Mismas reglas: solo cambia la pregunta, "
-           "la respuesta es byte-idéntica; Jaccard ≥ 0.80 contra las 12 de "
+           "la respuesta es byte-idéntica; Jaccard ≥ 0.80 contra las del set de evaluación (EVAL_FILE) "
            "evaluación descarta la paráfrasis; cada cifra clave debe aparecer ≥3 veces; "
            "sin duplicados (pregunta, respuesta). La pasada no tiene tope: el resultado "
            "fiel de la lógica es ~3,300 pares (verificado en local: 3,314, 0 descartes "
@@ -2835,7 +2841,7 @@ import json
 
 BASE = REPO + "/memo/reflection_qa.jsonl"
 V2 = REPO + "/memo/reflection_qa_v2.jsonl"
-EVAL = REPO + "/memo/eval_questions.json"
+EVAL = REPO + "/memo/" + EVAL_FILE
 OUT = REPO + "/memo/reflection_qa_v3.jsonl"
 
 EXTRA_FRAMINGS = [
@@ -2977,7 +2983,7 @@ def build_04():
             "04 — MEMO: evaluación con ejecutivo vía Ollama",
             "Evalúa el MEMORY entrenado en el notebook 03 con el protocolo MEMO "
             "(descomposición → sub-respuestas de MEMORY → síntesis) sobre las mismas "
-            "12 preguntas y con el scorer copiado inline en la celda 5 (misma lógica "
+            "el set de evaluación (100 preguntas por defecto; EVAL_SET=\"12\" para las 12 originales) y con el scorer copiado inline en la celda 5 (misma lógica "
             "que `memo/evaluate.py`).\n\n"
             "**Diseño Ollama:** el **EXECUTIVE** corre vía **ChatOllama** contra el "
             "servidor local (parámetro `EXEC_OLLAMA_MODEL`: `qwen2.5:1.5b` para paridad "
@@ -2995,10 +3001,14 @@ MEMORY_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"   # base de MEMORY (misma que el ent
 ADAPTER = REPO + "/memo/memory_model_colab"    # adaptador del notebook 03
 EXEC_OLLAMA_MODEL = "qwen2.5:1.5b"   # ejecutivo: 1.5b (paridad run 2) o qwen2.5:7b (mas grande)
 RUN_CONTROL = True                   # tambien evalua la base sin entrenar (control)
+EVAL_SET = "100"   # set de evaluacion: "100" (default, 40/30/30) o "12" (original)
+EVAL_FILE = "eval_questions_100.json" if EVAL_SET == "100" else "eval_questions.json"
+SUF = "_100" if EVAL_SET == "100" else ""
+N_Q = 100 if EVAL_SET == "100" else 12
 GENERATE_EXPANDED = False            # True = genera set de evaluacion ampliado (solo genera; NO evalua sin revision)
 EXPANDED_EVAL = REPO + "/memo/eval_questions_expanded.json"
-TRACE_OUT = REPO + "/memo/run_trace_colab.jsonl"
-TRACE_CONTROL_OUT = REPO + "/memo/run_trace_colab_control.jsonl"
+TRACE_OUT = REPO + f"/memo/run_trace_colab{SUF}.jsonl"
+TRACE_CONTROL_OUT = REPO + f"/memo/run_trace_colab_control{SUF}.jsonl"
 """),
         repo_setup_cell(),
         *data_ensure_cells(),
@@ -3142,11 +3152,11 @@ def run_memo(q):
                             for s, a in sub_answers],
             "final_answer": final}
 """),
-        md("## 3. Correr las 12 preguntas (MEMORY entrenado)"),
+        md("## 3. Correr el set de evaluación (MEMORY entrenado)"),
         code("""
 import json
 
-eval_qs = json.load(open(REPO + "/memo/eval_questions.json"))["questions"]
+eval_qs = json.load(open(REPO + "/memo/" + EVAL_FILE))["questions"]
 with open(TRACE_OUT, "w") as f:
     for item in eval_qs:
         r = run_memo(item["question"])
@@ -3158,7 +3168,7 @@ with open(TRACE_OUT, "w") as f:
 print(f"traza -> {TRACE_OUT}")
 """),
         md("## 4. Control (base sin entrenar, mismo ejecutivo)\n\n"
-           "Si `RUN_CONTROL` es True, repite las 12 con MEMORY = base sin adaptador. "
+           "Si `RUN_CONTROL` es True, repite el set con MEMORY = base sin adaptador. "
            "El control mide cuánto viene del entrenamiento y cuánto del ejecutivo: en "
            "el run 2 el control sacó 0/12 con el mismo ejecutivo 1.5B."),
         code("""
@@ -3169,7 +3179,7 @@ if RUN_CONTROL:
                                                  device_map="auto")
     _base.eval()
     mem_model = _base
-    eval_qs = json.load(open(REPO + "/memo/eval_questions.json"))["questions"]
+    eval_qs = json.load(open(REPO + "/memo/" + EVAL_FILE))["questions"]
     with open(TRACE_CONTROL_OUT, "w") as f:
         for item in eval_qs:
             r = run_memo(item["question"])
@@ -3188,7 +3198,7 @@ else:
            "misma regla de alucinación (cualquier número en la respuesta que no esté "
            "verificado en el informe), misma regla Q3 con 1,596 y mismas keywords para "
            "las preguntas sin números esperados (Q8/Q10/Q11). Escribe los mismos "
-           "archivos (`results_colab.md` y `results_colab_control.md`). Compara con el "
+           "archivos (`results_colab{SUF}.md` y `results_colab_control{SUF}.md`). Compara con el "
            "run 2 en CPU (2/12) y el run 1 (0/12)."),
         code(r"""
 import json, re
@@ -3229,7 +3239,7 @@ def score_trace(trace, out):
     # Scorer inline (misma logica que el scorer del repo): exactitud numerica
     # con tolerancia de redondeo, alucinacion = numero no verificado en el
     # informe, regla Q3 con 1,596 y keywords para preguntas sin numeros.
-    eval_data = json.load(open(REPO + "/memo/eval_questions.json"))
+    eval_data = json.load(open(REPO + "/memo/" + EVAL_FILE))
     questions = {q["id"]: q for q in eval_data["questions"]}
     trace_rows = [json.loads(l) for l in open(trace)]
 
@@ -3252,6 +3262,12 @@ def score_trace(trace, out):
         pass
     # anios y periodos no son alucinaciones
     verified |= {"2024", "2023", "2022"}
+    # las cifras esperadas del propio set de evaluacion tambien estan
+    # verificadas (con 100 preguntas, si no, respuestas correctas nuevas se
+    # marcarian como alucinacion por no estar en reflection_qa/triples_seed)
+    for _q in questions.values():
+        verified |= numbers_in(_q.get("expected", ""))
+        verified |= {norm_num(n) for n in _q.get("expected_numbers", [])}
 
     rows = []
     for r in trace_rows:
@@ -3295,7 +3311,7 @@ def score_trace(trace, out):
              "MEMORY = base + adaptador LoRA entrenado en reflexiones del informe. "
              "El EXECUTIVE nunca ve el corpus; solo las sub-respuestas de MEMORY.",
              "",
-             f"Correctas: **{total_ok}/12**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/12**.",
+             f"Correctas: **{total_ok}/{len(rows)}**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/{len(rows)}**.",
              "",
              "| ID | Nivel | Pregunta | Esperado | Respuesta MEMO | Veredicto |",
              "|----|-------|----------|----------|----------------|-----------|"]
@@ -3339,14 +3355,14 @@ def score_trace(trace, out):
         lines.append("- Ninguna.")
 
     open(out, "w").write("\n".join(lines) + "\n")
-    print(f"correctas {total_ok}/12, con alucinacion {total_halluc}/12 -> {out}")
+    print(f"correctas {total_ok}/{len(rows)}, con alucinacion {total_halluc}/{len(rows)} -> {out}")
     for r in rows:
         print(f"  {r['id']} L{r['level']} [{r['decomposition']}] {r['verdict']}"
               + (f" halluc={r['hallucinated']}" if r["hallucinated"] else ""))
 
 
-for trace, out in [(TRACE_OUT, REPO + "/memo/results_colab.md"),
-                   (TRACE_CONTROL_OUT, REPO + "/memo/results_colab_control.md")]:
+for trace, out in [(TRACE_OUT, REPO + f"/memo/results_colab{SUF}.md"),
+                   (TRACE_CONTROL_OUT, REPO + f"/memo/results_colab_control{SUF}.md")]:
     if RUN_CONTROL or "control" not in trace:
         score_trace(trace, out)
 """),
@@ -3355,7 +3371,7 @@ for trace, out in [(TRACE_OUT, REPO + "/memo/results_colab.md"),
            "de las tripletas semilla (hechos ya verificados) con plantillas por tipo de "
            "tripleta. **Cada cifra esperada se verifica por grep literal en el corpus "
            "(`chunks.jsonl`): lo que no aparece literal, se descarta — nunca se adivina.** "
-           "También se descartan las que se parecen demasiado (Jaccard ≥ 0.80) a las 12 "
+           "También se descartan las que se parecen demasiado (Jaccard ≥ 0.80) a las preguntas del set actual (EVAL_FILE) "
            "originales o entre sí. La salida lleva `\"needs_review\": true`: hay que "
            "revisar las preguntas a mano antes de evaluar con ellas (cambia `EVAL_FILE` "
            "en la celda 3 y vuelve a correr). Por defecto está apagado."),
@@ -3368,7 +3384,7 @@ else:
     triples = json.load(open(REPO + "/pipeline/triples_seed.json"))["triples"]
     chunks = [json.loads(l) for l in open(REPO + "/pipeline/data/chunks.jsonl")]
     corpus = "\n".join(c["text"] for c in chunks)
-    orig = json.load(open(REPO + "/memo/eval_questions.json"))["questions"]
+    orig = json.load(open(REPO + "/memo/" + EVAL_FILE))["questions"]
 
     def tokens(q):
         import unicodedata
@@ -3446,10 +3462,10 @@ else:
     print(f"-> {EXPANDED_EVAL} (needs_review=true: revisa antes de usar)")
 """),
         *save_cell([
-            ("memo/run_trace_colab.jsonl", "Traza MEMO Colab (12 preguntas)", True),
-            ("memo/run_trace_colab_control.jsonl", "Traza control (base sin entrenar)", False),
-            ("memo/results_colab.md", "Resultados MEMO Colab", True),
-            ("memo/results_colab_control.md", "Resultados control", False),
+            ("memo/run_trace_colab{SUF}.jsonl", "Traza MEMO Colab ({N_Q} preguntas)", True),
+            ("memo/run_trace_colab_control{SUF}.jsonl", "Traza control (base sin entrenar)", False),
+            ("memo/results_colab{SUF}.md", "Resultados MEMO Colab", True),
+            ("memo/results_colab_control{SUF}.md", "Resultados control", False),
             ("memo/eval_questions_expanded.json", "Set de evaluación ampliado (si se generó; needs_review=true)", False),
         ]),
     ]
@@ -3470,7 +3486,7 @@ import numpy as np
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 CHUNKS_FILE = REPO + "/pipeline/data/chunks.jsonl"
-EVAL_FILE = REPO + "/memo/eval_questions.json"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE  # ruta completa (EVAL_FILE es solo el nombre)
 
 
 def digits(s):
@@ -3491,7 +3507,7 @@ emb = model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
 emb = np.asarray(emb, dtype=np.float32)
 print(f"embeddings: {emb.shape} in {time.time() - t0:.1f}s", flush=True)
 
-eval_qs = json.load(open(EVAL_FILE))["questions"]
+eval_qs = json.load(open(EVAL_PATH))["questions"]
 results = []
 for q in eval_qs:
     q_emb = model.encode([q["question"]], normalize_embeddings=True,
@@ -3538,8 +3554,8 @@ json.dump(out, open(RETRIEVAL_FILE, "w"), ensure_ascii=False, indent=2)
 n_all = sum(1 for r in results if r["all_covered"])
 n_none = sum(1 for r in results if r["all_covered"] is False
              and not any(r["coverage"].values()))
-print(f"retrieval: {n_all}/12 preguntas con TODAS las cifras esperadas "
-      f"en top-{K}; {n_none}/12 sin ninguna -> {RETRIEVAL_FILE}")
+print(f"retrieval: {n_all}/{len(eval_qs)} preguntas con TODAS las cifras esperadas "
+      f"en top-{K}; {n_none}/{len(eval_qs)} sin ninguna -> {RETRIEVAL_FILE}")
 """
 
     nb05_reader_src = r"""
@@ -3638,11 +3654,11 @@ import json
 import re
 from collections import Counter
 
-EVAL_FILE = REPO + "/memo/eval_questions.json"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE  # ruta completa (EVAL_FILE es solo el nombre)
 QA_FILE = REPO + "/memo/reflection_qa.jsonl"
 SEED_FILE = REPO + "/pipeline/triples_seed.json"
 CHUNKS_FILE = REPO + "/pipeline/data/chunks.jsonl"
-OUT_FILE = REPO + "/rag_baseline/results_colab.md"
+OUT_FILE = REPO + f"/rag_baseline/results_colab{SUF}.md"
 
 
 def digits(s):
@@ -3689,7 +3705,7 @@ def literal_present(text, expected):
     return grouped in text or e in text
 
 
-eval_data = json.load(open(EVAL_FILE))
+eval_data = json.load(open(EVAL_PATH))
 questions = {q["id"]: q for q in eval_data["questions"]}
 trace = [json.loads(l) for l in open(TRACE_OUT)]
 retr = {r["id"]: r for r in json.load(open(RETRIEVAL_FILE))["questions"]}
@@ -3713,6 +3729,12 @@ try:
 except FileNotFoundError:
     pass
 verified |= {"2024", "2023", "2022"}
+# las cifras esperadas del propio set de evaluacion tambien estan
+# verificadas (con 100 preguntas, si no, respuestas correctas nuevas se
+# marcarian como alucinacion por no estar en reflection_qa/triples_seed)
+for _q in questions.values():
+    verified |= numbers_in(_q.get("expected", ""))
+    verified |= {norm_num(n) for n in _q.get("expected_numbers", [])}
 
 rows = []
 for r in trace:
@@ -3796,8 +3818,8 @@ lines = ["# Resultados RAG vectorial (baseline) — FEMSA 2024",
          "Scorer con la misma logica que el de MEMO (misma exactitud numerica, "
          "misma definicion de alucinacion, misma regla Q3 con 1,596).",
          "",
-         f"Correctas: **{total_ok}/12**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/12**. "
-         f"Retrieval top-5 con todas las cifras esperadas literales: **{n_retr_full}/12** "
+         f"Correctas: **{total_ok}/{len(rows)}**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/{len(rows)}**. "
+         f"Retrieval top-5 con todas las cifras esperadas literales: **{n_retr_full}/{len(rows)}** "
          f"(el diagnostico con tolerancia de redondeo decia 6/12; ver Caveats).",
          "",
          "| ID | Nivel | Pregunta | Esperado | Respuesta RAG | Veredicto | Modo de fallo |",
@@ -3819,15 +3841,15 @@ for mode, n in Counter(r["failure_mode"] for r in rows).most_common():
     ids = ", ".join(r["id"] for r in rows if r["failure_mode"] == mode)
     lines.append(f"- {mode}: {n} ({ids})")
 lines += ["",
-          "## Comparacion de los tres sistemas (12 preguntas, mismo scorer)",
+          f"## Comparacion de los sistemas (mismo scorer; este run: {len(rows)} preguntas)",
           "",
           "| Sistema | Correctas | Nivel 1 | Nivel 2 | Nivel 3 |",
           "|---------|-----------|---------|---------|---------|",
           "| Grafo (Relate, Cypher) | 12/12 | 4/4 | 4/4 | 4/4 |",
-          f"| RAG vectorial (este baseline) | {total_ok}/12 | "
-          f"{sum(1 for r in by_level[1] if r['verdict'] == 'correcta')}/4 | "
-          f"{sum(1 for r in by_level[2] if r['verdict'] == 'correcta')}/4 | "
-          f"{sum(1 for r in by_level[3] if r['verdict'] == 'correcta')}/4 |",
+          f"| RAG vectorial (este baseline) | {total_ok}/{len(rows)} | "
+          f"{sum(1 for r in by_level[1] if r['verdict'] == 'correcta')}/{len(by_level[1])} | "
+          f"{sum(1 for r in by_level[2] if r['verdict'] == 'correcta')}/{len(by_level[2])} | "
+          f"{sum(1 for r in by_level[3] if r['verdict'] == 'correcta')}/{len(by_level[3])} |",
           "| MEMO run 2 (0.5B LoRA r=32 + ejecutivo 1.5B) | 2/12 | 1/4 | 1/4 | 0/4 |",
           "| MEMO run 1 (0.5B LoRA r=8 + ejecutivo 0.5B) | 0/12 | 0/4 | 0/4 | 0/4 |",
           "",
@@ -3937,8 +3959,8 @@ for r in rows:
     lines.append(f"| {r['id']} | {r['retrieval_pages']} | {cov_s} | {ctx_s} |")
 
 open(OUT_FILE, "w").write("\n".join(lines) + "\n")
-print(f"correctas {total_ok}/12, con alucinacion {total_halluc}/12, "
-      f"retrieval literal completo {n_retr_full}/12 -> {OUT_FILE}")
+print(f"correctas {total_ok}/{len(rows)}, con alucinacion {total_halluc}/{len(rows)}, "
+      f"retrieval literal completo {n_retr_full}/{len(rows)} -> {OUT_FILE}")
 for r in rows:
     print(f"  {r['id']} L{r['level']} {r['verdict']} [{r['failure_mode']}]"
           + (f" halluc={r['hallucinated']}" if r["hallucinated"] else ""))
@@ -3960,10 +3982,14 @@ for r in rows:
         drive_mount_cell(),
         params_cell("""
 # --- Parametros ---
+EVAL_SET = "100"   # set de evaluacion: "100" (default, 40/30/30) o "12" (original)
+EVAL_FILE = "eval_questions_100.json" if EVAL_SET == "100" else "eval_questions.json"
+SUF = "_100" if EVAL_SET == "100" else ""
+N_Q = 100 if EVAL_SET == "100" else 12
 READER_OLLAMA_MODEL = "qwen2.5:1.5b"   # lector: 1.5b (paridad CPU) o qwen2.5:7b (mas grande)
 K = 5
-RETRIEVAL_FILE = REPO + "/rag_baseline/retrieval.json"
-TRACE_OUT = REPO + "/rag_baseline/run_trace_colab.jsonl"
+RETRIEVAL_FILE = REPO + f"/rag_baseline/retrieval{SUF}.json"
+TRACE_OUT = REPO + f"/rag_baseline/run_trace_colab{SUF}.jsonl"
 """),
         repo_setup_cell(),
         *data_ensure_cells(),
@@ -3976,7 +4002,7 @@ TRACE_OUT = REPO + "/rag_baseline/run_trace_colab.jsonl"
            "Lógica inline de `rag_baseline/retrieve.py` (proveniencia; el script no se "
            "ejecuta): embebe las 151 páginas con all-MiniLM-L6-v2 y recupera top-5 por "
            "pregunta, con el diagnóstico de cobertura de cifras esperadas (separa fallos "
-           "de retrieval de fallos de lector). Escribe `retrieval.json` con el mismo "
+           "de retrieval de fallos de lector). Escribe `retrieval{SUF}.json` con el mismo "
            "esquema que el script."),
         code(nb05_retrieval_src),
         md("## 2. Lector vía Ollama\n\n"
@@ -4002,9 +4028,9 @@ TRACE_OUT = REPO + "/rag_baseline/run_trace_colab.jsonl"
            "Ojo: `answer.py` carga el modelo sin `device_map`, así que en Colab correría "
            "en CPU salvo que se adapte. Por eso el default en Colab es Ollama."),
         *save_cell([
-            ("rag_baseline/retrieval.json", "Retrieval denso top-5 (12 preguntas)", True),
-            ("rag_baseline/run_trace_colab.jsonl", "Traza del lector (12 respuestas)", True),
-            ("rag_baseline/results_colab.md", "Resultados RAG Colab", True),
+            ("rag_baseline/retrieval{SUF}.json", "Retrieval denso top-5 ({N_Q} preguntas)", True),
+            ("rag_baseline/run_trace_colab{SUF}.jsonl", "Traza del lector ({N_Q} respuestas)", True),
+            ("rag_baseline/results_colab{SUF}.md", "Resultados RAG Colab", True),
         ], note="El notebook 08 (RAGAS) verifica que existan estas trazas antes de medir: "
                 "sin ellas no hay métricas."),
     ]
@@ -4030,6 +4056,10 @@ def build_06():
         params_cell("""
 # --- Parametros ---
 READER_OLLAMA_MODEL = "qwen2.5:1.5b"   # lector: 1.5b (paridad CPU) o qwen2.5:7b (mas grande)
+EVAL_SET = "100"   # set de evaluacion: "100" (default, 40/30/30) o "12" (original)
+EVAL_FILE = "eval_questions_100.json" if EVAL_SET == "100" else "eval_questions.json"
+SUF = "_100" if EVAL_SET == "100" else ""
+N_Q = 100 if EVAL_SET == "100" else 12
 K = 5
 """),
         repo_setup_cell(),
@@ -4044,12 +4074,12 @@ K = 5
            "siguiente: traduce cada pregunta al inglés y añade términos de dominio "
            "del `TERM_MAP` (solo términos presentes en la pregunta; la celda aborta "
            "si se cuela una cifra esperada o un nombre de respuesta). "
-           "Salida: `expanded_queries.json`."),
+           "Salida: `expanded_queries{SUF}.json`."),
         code(r"""
 import json, re
 
-EVAL_PATH = REPO + "/memo/eval_questions.json"
-EXPANDED_OUT = REPO + "/rag_baseline/expanded_queries.json"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE
+EXPANDED_OUT = REPO + f"/rag_baseline/expanded_queries{SUF}.json"
 
 # Termino en espanol (tal como aparece en las preguntas) -> equivalentes
 # en ingles usados como keywords. Solo terminos presentes en la pregunta.
@@ -4192,7 +4222,7 @@ EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 RRF_K = 60
 TOKEN_RE = re.compile(r"[a-z0-9áéíóúüñ]+")
 CHUNKS_PATH = REPO + "/pipeline/data/chunks.jsonl"
-EVAL_PATH = REPO + "/memo/eval_questions.json"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE
 
 
 def nb06_tokenize(text):
@@ -4307,23 +4337,23 @@ def nb06_run_retrieval(query_of, method, out_path, label, expanded=False):
     n_all = sum(1 for r in results if r["all_covered"])
     n_none = sum(1 for r in results if r["all_covered"] is False
                  and not any(r["coverage"].values()))
-    print(f"retrieval {label}: {n_all}/12 preguntas con TODAS las cifras "
-          f"esperadas en top-{K}; {n_none}/12 sin ninguna -> {out_path}")
+    print(f"retrieval {label}: {n_all}/{len(results)} preguntas con TODAS las cifras "
+          f"esperadas en top-{K}; {n_none}/{len(results)} sin ninguna -> {out_path}")
 """),
         code(r"""
 # Corrida 1: preguntas originales en espanol.
 nb06_run_retrieval(lambda q: q["question"],
                    "hybrid BM25Okapi (k1=1.5, b=0.75) + MiniLM dense, RRF k=60",
-                   REPO + "/rag_baseline/retrieval_hybrid.json", "hibrido")
+                   REPO + f"/rag_baseline/retrieval_hybrid{SUF}.json", "hibrido")
 """),
         code(r"""
 # Corrida 2: expanded queries (traduccion EN + keywords de dominio).
 expanded = {q["id"]: q["expanded_query"]
-            for q in json.load(open(REPO + "/rag_baseline/expanded_queries.json"))["questions"]}
+            for q in json.load(open(REPO + f"/rag_baseline/expanded_queries{SUF}.json"))["questions"]}
 nb06_run_retrieval(lambda q: expanded[q["id"]],
                    "hybrid BM25Okapi (k1=1.5, b=0.75) + MiniLM dense, RRF k=60, "
                    "con queries expandidas (traduccion EN + keywords de dominio)",
-                   REPO + "/rag_baseline/retrieval_expanded.json", "expandido",
+                   REPO + f"/rag_baseline/retrieval_expanded{SUF}.json", "expandido",
                    expanded=True)
 """),
         md("## 3. Lector vía Ollama (las dos variantes)\n\n"
@@ -4426,10 +4456,10 @@ def run_reader(retrieval_file, trace_out):
     print(f"traza -> {trace_out}")
 
 
-run_reader(REPO + "/rag_baseline/retrieval_hybrid.json",
-           REPO + "/rag_baseline/run_trace_hybrid_colab.jsonl")
-run_reader(REPO + "/rag_baseline/retrieval_expanded.json",
-           REPO + "/rag_baseline/run_trace_expanded_colab.jsonl")
+run_reader(REPO + f"/rag_baseline/retrieval_hybrid{SUF}.json",
+           REPO + f"/rag_baseline/run_trace_hybrid_colab{SUF}.jsonl")
+run_reader(REPO + f"/rag_baseline/retrieval_expanded{SUF}.json",
+           REPO + f"/rag_baseline/run_trace_expanded_colab{SUF}.jsonl")
 """),
         md("## 4. Puntuar ambas variantes\n\n"
            "La lógica de `rag_baseline/score_hybrid.py` y "
@@ -4485,7 +4515,7 @@ def nb06_literal_present(text, expected):
     return grouped in text or e in text
 
 
-EVAL_PATH = REPO + "/memo/eval_questions.json"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE
 QA_PATH = REPO + "/memo/reflection_qa.jsonl"
 SEED_PATH = REPO + "/pipeline/triples_seed.json"
 
@@ -4509,6 +4539,12 @@ try:
 except FileNotFoundError:
     pass
 verified |= {"2024", "2023", "2022"}
+# las cifras esperadas del propio set de evaluacion tambien estan
+# verificadas (con 100 preguntas, si no, respuestas correctas nuevas se
+# marcarian como alucinacion por no estar en reflection_qa/triples_seed)
+for _q in questions.values():
+    verified |= nb06_numbers_in(_q.get("expected", ""))
+    verified |= {nb06_norm_num(n) for n in _q.get("expected_numbers", [])}
 
 
 def nb06_score(trace_path, retrieval_path, out_path, verified_modes,
@@ -4575,8 +4611,8 @@ def nb06_score(trace_path, retrieval_path, out_path, verified_modes,
 
     lines = [title, ""] + intro_lines + [
              "",
-             f"Correctas: **{total_ok}/12**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/12**. "
-             f"Retrieval top-5 con todas las cifras esperadas literales: **{n_retr_full}/12** "
+             f"Correctas: **{total_ok}/{len(rows)}**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/{len(rows)}**. "
+             f"Retrieval top-5 con todas las cifras esperadas literales: **{n_retr_full}/{len(rows)}** "
              f"{correctas_suffix}",
              "",
              "| ID | Nivel | Pregunta | Esperado | Respuesta RAG | Veredicto | Modo de fallo |",
@@ -4598,15 +4634,15 @@ def nb06_score(trace_path, retrieval_path, out_path, verified_modes,
         ids = ", ".join(r["id"] for r in rows if r["failure_mode"] == mode)
         lines.append(f"- {mode}: {n} ({ids})")
     lines += ["",
-              "## Comparacion de los sistemas (12 preguntas, mismo scorer)",
+              f"## Comparacion de los sistemas (mismo scorer; este run: {len(rows)} preguntas)",
               "",
               "| Sistema | Correctas | Nivel 1 | Nivel 2 | Nivel 3 |",
               "|---------|-----------|---------|---------|---------|",
               "| Grafo (Relate, Cypher) | 12/12 | 4/4 | 4/4 | 4/4 |",
-              f"| {este_run_label} | {total_ok}/12 | "
-              f"{sum(1 for r in by_level[1] if r['verdict'] == 'correcta')}/4 | "
-              f"{sum(1 for r in by_level[2] if r['verdict'] == 'correcta')}/4 | "
-              f"{sum(1 for r in by_level[3] if r['verdict'] == 'correcta')}/4 |"]
+              f"| {este_run_label} | {total_ok}/{len(rows)} | "
+              f"{sum(1 for r in by_level[1] if r['verdict'] == 'correcta')}/{len(by_level[1])} | "
+              f"{sum(1 for r in by_level[2] if r['verdict'] == 'correcta')}/{len(by_level[2])} | "
+              f"{sum(1 for r in by_level[3] if r['verdict'] == 'correcta')}/{len(by_level[3])} |"]
     lines += other_rows
     lines += cambio_lines
     lines += verdict_lines
@@ -4643,16 +4679,16 @@ def nb06_score(trace_path, retrieval_path, out_path, verified_modes,
         lines.append(f"| {r['id']} | {r['retrieval_pages']} | {cov_s} | {ctx_s} |")
 
     open(out_path, "w").write("\n".join(lines) + "\n")
-    print(f"correctas {total_ok}/12, con alucinacion {total_halluc}/12, "
-          f"retrieval literal completo {n_retr_full}/12 -> {out_path}")
+    print(f"correctas {total_ok}/{len(rows)}, con alucinacion {total_halluc}/{len(rows)}, "
+          f"retrieval literal completo {n_retr_full}/{len(rows)} -> {out_path}")
     for r in rows:
         print(f"  {r['id']} L{r['level']} {r['verdict']} [{r['failure_mode']}]"
               + (f" halluc={r['hallucinated']}" if r["hallucinated"] else ""))
 
 # --- Scorer hibrido (sin expansion) ---
-nb06_score(REPO + "/rag_baseline/run_trace_hybrid_colab.jsonl",
-           REPO + "/rag_baseline/retrieval_hybrid.json",
-           REPO + "/rag_baseline/results_hybrid_colab.md",
+nb06_score(REPO + f"/rag_baseline/run_trace_hybrid_colab{SUF}.jsonl",
+           REPO + f"/rag_baseline/retrieval_hybrid{SUF}.json",
+           REPO + f"/rag_baseline/results_hybrid_colab{SUF}.md",
            {
                "Q1": "ok",
                "Q2": "cifra esperada fuera del corpus (+24.9% no existe en el informe; el lector contesto bien lo preguntado)",
@@ -4798,9 +4834,9 @@ nb06_score(REPO + "/rag_baseline/run_trace_hybrid_colab.jsonl",
             "puntajes son comparables."])
 
 # --- Scorer hibrido + expansion ---
-nb06_score(REPO + "/rag_baseline/run_trace_expanded_colab.jsonl",
-           REPO + "/rag_baseline/retrieval_expanded.json",
-           REPO + "/rag_baseline/results_expanded_colab.md",
+nb06_score(REPO + f"/rag_baseline/run_trace_expanded_colab{SUF}.jsonl",
+           REPO + f"/rag_baseline/retrieval_expanded{SUF}.json",
+           REPO + f"/rag_baseline/results_expanded_colab{SUF}.md",
            {
                "Q1": "ok",
                "Q2": "cifra esperada fuera del corpus (+24.9% no existe en el informe; el lector contesto bien lo preguntado)",
@@ -5009,8 +5045,8 @@ nb06_score(REPO + "/rag_baseline/run_trace_expanded_colab.jsonl",
 import re
 
 for name, path in [("denso (NB05)", REPO + "/rag_baseline/results_colab.md"),
-                   ("hibrido", REPO + "/rag_baseline/results_hybrid_colab.md"),
-                   ("hibrido + expansion", REPO + "/rag_baseline/results_expanded_colab.md")]:
+                   ("hibrido", REPO + f"/rag_baseline/results_hybrid_colab{SUF}.md"),
+                   ("hibrido + expansion", REPO + f"/rag_baseline/results_expanded_colab{SUF}.md")]:
     try:
         txt = open(path).read()
         m = re.search(r"Correctas: \\*\\*(\\d+/12)\\*\\*", txt)
@@ -5019,13 +5055,13 @@ for name, path in [("denso (NB05)", REPO + "/rag_baseline/results_colab.md"),
         print(f"{name:22s} (sin resultados: corre el NB05 para el denso)")
 """),
         *save_cell([
-            ("rag_baseline/retrieval_hybrid.json", "Retrieval híbrido (12 preguntas)", True),
-            ("rag_baseline/retrieval_expanded.json", "Retrieval híbrido + expansión", True),
-            ("rag_baseline/run_trace_hybrid_colab.jsonl", "Traza híbrido", True),
-            ("rag_baseline/run_trace_expanded_colab.jsonl", "Traza híbrido + expansión", True),
-            ("rag_baseline/results_hybrid_colab.md", "Resultados híbrido", True),
-            ("rag_baseline/results_expanded_colab.md", "Resultados híbrido + expansión", True),
-            ("rag_baseline/expanded_queries.json", "Queries expandidas", False),
+            ("rag_baseline/retrieval_hybrid{SUF}.json", "Retrieval híbrido ({N_Q} preguntas)", True),
+            ("rag_baseline/retrieval_expanded{SUF}.json", "Retrieval híbrido + expansión", True),
+            ("rag_baseline/run_trace_hybrid_colab{SUF}.jsonl", "Traza híbrido", True),
+            ("rag_baseline/run_trace_expanded_colab{SUF}.jsonl", "Traza híbrido + expansión", True),
+            ("rag_baseline/results_hybrid_colab{SUF}.md", "Resultados híbrido", True),
+            ("rag_baseline/results_expanded_colab{SUF}.md", "Resultados híbrido + expansión", True),
+            ("rag_baseline/expanded_queries{SUF}.json", "Queries expandidas", False),
         ], note="El notebook 07 (juez) y el 08 (RAGAS) verifican que existan estos "
                 "retrievales y trazas antes de correr: sin ellos no hay nada que juzgar "
                 "ni medir."),
@@ -5072,9 +5108,13 @@ def build_07():
 # --- Parametros ---
 JUDGE_OLLAMA_MODEL = "qwen2.5:7b"   # juez y lector: 7b (default, el que muestra lo agentico)
                                      # o qwen2.5:1.5b para paridad con el run en CPU
+EVAL_SET = "100"   # set de evaluacion: "100" (default, 40/30/30) o "12" (original)
+EVAL_FILE = "eval_questions_100.json" if EVAL_SET == "100" else "eval_questions.json"
+SUF = "_100" if EVAL_SET == "100" else ""
+N_Q = 100 if EVAL_SET == "100" else 12
 K = 10
-RETRIEVAL_K10 = REPO + "/rag_baseline/retrieval_hybrid_k10.json"
-TRACE_OUT = REPO + "/agentic_rag/run_trace_judge_colab.jsonl"
+RETRIEVAL_K10 = REPO + f"/rag_baseline/retrieval_hybrid_k10{SUF}.json"
+TRACE_OUT = REPO + f"/agentic_rag/run_trace_judge_colab{SUF}.jsonl"
 """),
         repo_setup_cell(),
         *data_ensure_cells(),
@@ -5087,7 +5127,7 @@ TRACE_OUT = REPO + "/agentic_rag/run_trace_judge_colab.jsonl"
            "Lógica inline (procedencia: `rag_baseline/retrieve_hybrid.py`): BM25 Okapi "
            "+ MiniLM, fusión RRF k=60, top-10 por pregunta (el juez necesita más de "
            "donde elegir que el top-5 fijo). Determinista: se puede regenerar sin "
-           "cambiar el resultado. Escribe `retrieval_hybrid_k10.json` con el mismo "
+           "cambiar el resultado. Escribe `retrieval_hybrid_k10{SUF}.json` con el mismo "
            "esquema que el script (página, score RRF, `bm25_rank`/`dense_rank` y "
            "scores por chunk, cobertura de cifras esperadas y top-10 de cada ranker)."),
         code(r"""
@@ -5099,7 +5139,7 @@ from sentence_transformers import SentenceTransformer
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 RRF_K = 60
-EVAL_PATH = REPO + "/memo/eval_questions.json"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE
 TOKEN_RE = re.compile(r"[a-z0-9áéíóúüñ]+")
 
 
@@ -5199,8 +5239,8 @@ json.dump(out, open(RETRIEVAL_K10, "w"), ensure_ascii=False, indent=2)
 n_all = sum(1 for r in results if r["all_covered"])
 n_none = sum(1 for r in results if r["all_covered"] is False
              and not any(r["coverage"].values()))
-print(f"retrieval hibrido: {n_all}/12 preguntas con TODAS las cifras "
-      f"esperadas en top-{K}; {n_none}/12 sin ninguna -> {RETRIEVAL_K10}")
+print(f"retrieval hibrido: {n_all}/{len(results)} preguntas con TODAS las cifras "
+      f"esperadas en top-{K}; {n_none}/{len(results)} sin ninguna -> {RETRIEVAL_K10}")
 """),
         md("## 2. Juez + lector (ChatOllama)\n\n"
            "Un llamado al juez por pregunta con los 10 chunks numerados (misma versión "
@@ -5444,7 +5484,7 @@ print(f"listo en {time.time() - t0:.1f}s -> {TRACE_OUT}")
 """),
         md("## 3. Puntuar con el mismo scorer (con diagnóstico del juez, inline)\n\n"
            "Lógica inline (procedencia: `agentic_rag/score_judge.py`): escribe "
-           "`results_agentic_judge_colab.md` con el puntaje, la comparación con los "
+           "`results_agentic_judge_colab{SUF}.md` con el puntaje, la comparación con los "
            "demás sistemas y el diagnóstico del juez (precisión/recall de selección "
            "contra las páginas de evidencia). Misma exactitud numérica, misma "
            "definición de alucinación, misma regla Q3 con 1,596 y mismas keywords "
@@ -5456,19 +5496,17 @@ import json, re
 from collections import Counter
 
 TRACE_PATH = TRACE_OUT
-OUT_MD = REPO + "/agentic_rag/results_agentic_judge_colab.md"
-EVAL_PATH = REPO + "/memo/eval_questions.json"
+OUT_MD = REPO + f"/agentic_rag/results_agentic_judge_colab{SUF}.md"
+EVAL_PATH = REPO + "/memo/" + EVAL_FILE
 QA_PATH = REPO + "/memo/reflection_qa.jsonl"
 SEED_PATH = REPO + "/pipeline/triples_seed.json"
-GT_PATH = REPO + "/rag_baseline/ragas/ground_truth_evidence.json"
+GT_PATH = REPO + f"/rag_baseline/ragas/ground_truth_evidence{SUF}.json"
 MODEL_LABEL = f"Ollama {JUDGE_OLLAMA_MODEL} (Colab T4)"
 SYSTEM_NAME = "RAG agentico juez Ollama (Colab)"
 # BLANK_MODES = True: modos de fallo en PENDIENTE (run nuevo). Tras
 # verificarlos a mano, llena VERIFIED_MODES abajo y corre con False.
 BLANK_MODES = True
-VERIFIED_MODES = {f"Q{i}": "PENDIENTE" for i in range(1, 13)}
-if BLANK_MODES:
-    VERIFIED_MODES = {qid: "PENDIENTE" for qid in VERIFIED_MODES}
+VERIFIED_MODES = {}  # se llena tras cargar las preguntas (ver abajo)
 
 
 def digits(s):
@@ -5512,6 +5550,11 @@ def literal_present(text, expected):
 
 eval_data = json.load(open(EVAL_PATH))
 questions = {q["id"]: q for q in eval_data["questions"]}
+# Modos de fallo: con BLANK_MODES=True quedan en PENDIENTE; tras
+# verificarlos a mano, llena este dict (una entrada por pregunta) y corre
+# con BLANK_MODES=False (si queda vacio, se rellena con PENDIENTE).
+if BLANK_MODES or not VERIFIED_MODES:
+    VERIFIED_MODES = {qid: "PENDIENTE" for qid in questions}
 trace = [json.loads(l) for l in open(TRACE_PATH)]
 
 # Mismo conjunto de numeros verificados que el scorer de MEMO.
@@ -5531,6 +5574,12 @@ try:
 except FileNotFoundError:
     pass
 verified |= {"2024", "2023", "2022"}
+# las cifras esperadas del propio set de evaluacion tambien estan
+# verificadas (con 100 preguntas, si no, respuestas correctas nuevas se
+# marcarian como alucinacion por no estar en reflection_qa/triples_seed)
+for _q in questions.values():
+    verified |= numbers_in(_q.get("expected", ""))
+    verified |= {norm_num(n) for n in _q.get("expected_numbers", [])}
 
 # Paginas de evidencia por pregunta (ground truth auditable, RAGAS).
 evidence_pages = {}
@@ -5641,13 +5690,13 @@ lines = ["# Resultados RAG agentico juez (seleccion de chunks con juez) — FEMS
          "Scorer con la misma exactitud numerica, misma definicion de "
          "alucinacion y misma regla Q3 con 1,596 que los demas sistemas.",
          "",
-         f"Correctas: **{total_ok}/12**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/12**. "
+         f"Correctas: **{total_ok}/{len(rows)}**. Con alucinacion (numero no verificado en el informe): **{total_halluc}/{len(rows)}**. "
          f"Preguntas donde el contexto seleccionado contenia todas las cifras "
-         f"esperadas (literal): **{n_ev_full}/12**. "
-         f"Juez con veredictos validos: **{n_judge_ok}/12** preguntas "
+         f"esperadas (literal): **{n_ev_full}/{len(rows)}**. "
+         f"Juez con veredictos validos: **{n_judge_ok}/{len(rows)}** preguntas "
          f"({n_abstain_judge} abstencion{'es' if n_abstain_judge != 1 else ''} por juez fallido, "
          f"{n_abstain_empty} por seleccion vacia). "
-         f"Chunks seleccionados: **{total_selected}/120** "
+         f"Chunks seleccionados: **{total_selected}/{10 * len(rows)}** "
          f"(media {total_selected / max(len(rows), 1):.1f} por pregunta). "
          f"Seleccion del juez vs evidencia (pooled): precision "
          f"**{pct(pooled_prec)}**, recall **{pct(pooled_rec)}**. "
@@ -5674,7 +5723,7 @@ lines += ["",
           "Precision = paginas seleccionadas que son evidencia / paginas "
           "seleccionadas. Recall = paginas de evidencia conservadas / paginas de "
           "evidencia totales (ground truth auditable, "
-          "rag_baseline/ragas/ground_truth_evidence.json). Un recall bajo dice que "
+          "rag_baseline/ragas/ground_truth_evidence{SUF}.json). Un recall bajo dice que "
           "el juez tiro la evidencia; una precision baja dice que el juez dejo pasar "
           "ruido y el lector tuvo que elegir entre mas chunks.",
           "",
@@ -5694,12 +5743,12 @@ for mode, n in Counter(r["failure_mode"] for r in rows).most_common():
     ids = ", ".join(r["id"] for r in rows if r["failure_mode"] == mode)
     lines.append(f"- {mode}: {n} ({ids})")
 lines += ["",
-          "## Comparacion de los sistemas (12 preguntas, mismo scorer)",
+          f"## Comparacion de los sistemas (mismo scorer; este run: {len(rows)} preguntas)",
           "",
           "| Sistema | Correctas | Nivel 1 | Nivel 2 | Nivel 3 |",
           "|---------|-----------|---------|---------|---------|",
           "| Grafo (Relate, Cypher) | 12/12 | 4/4 | 4/4 | 4/4 |",
-          f"| {SYSTEM_NAME} | {total_ok}/12 | {lvl_ok(1)}/4 | {lvl_ok(2)}/4 | {lvl_ok(3)}/4 |",
+          f"| {SYSTEM_NAME} | {total_ok}/{len(rows)} | {lvl_ok(1)}/{len(by_level[1])} | {lvl_ok(2)}/{len(by_level[2])} | {lvl_ok(3)}/{len(by_level[3])} |",
           "| RAG hibrido + expansion de queries | 5/12 | 2/4 | 2/4 | 1/4 |",
           "| RAG hibrido BM25+denso (sin expansion) | 2/12 | 1/4 | 0/4 | 1/4 |",
           "| RAG vectorial denso puro | 2/12 | 0/4 | 1/4 | 1/4 |",
@@ -5777,8 +5826,8 @@ for r in rows:
     lines.append(f"| {r['id']} | {cov_p} | {cov_s} |")
 
 open(OUT_MD, "w").write("\n".join(lines) + "\n")
-print(f"correctas {total_ok}/12, con alucinacion {total_halluc}/12, "
-      f"seleccionados {total_selected}/120, juez ok {n_judge_ok}/12, "
+print(f"correctas {total_ok}/{len(rows)}, con alucinacion {total_halluc}/{len(rows)}, "
+      f"seleccionados {total_selected}/{10 * len(rows)}, juez ok {n_judge_ok}/{len(rows)}, "
       f"precision {pct(pooled_prec)}, recall {pct(pooled_rec)}, "
       f"{total_seconds / 60:.1f} min -> {OUT_MD}")
 for r in rows:
@@ -5788,9 +5837,9 @@ for r in rows:
           + (f" halluc={r['hallucinated']}" if r["hallucinated"] else ""))
 """),
         *save_cell([
-            ("rag_baseline/retrieval_hybrid_k10.json", "Retrieval híbrido top-10 (12 preguntas)", True),
-            ("agentic_rag/run_trace_judge_colab.jsonl", "Traza juez + lector (12 preguntas)", True),
-            ("agentic_rag/results_agentic_judge_colab.md", "Resultados RAG agéntico juez", True),
+            ("rag_baseline/retrieval_hybrid_k10{SUF}.json", "Retrieval híbrido top-10 ({N_Q} preguntas)", True),
+            ("agentic_rag/run_trace_judge_colab{SUF}.jsonl", "Traza juez + lector ({N_Q} preguntas)", True),
+            ("agentic_rag/results_agentic_judge_colab{SUF}.md", "Resultados RAG agéntico juez", True),
         ], note="El puntaje del juez es EL resultado agéntico que va al post (el ReAct "
                 "2/12 queda como negativo documentado). Sin esta traza, el draft no se "
                 "puede actualizar con el resultado real."),
@@ -5822,6 +5871,10 @@ def build_08():
         params_cell("""
 # --- Parametros ---
 JUDGE_OLLAMA_MODEL = "qwen2.5:7b"   # juez: 7b (default, mejor juez) o qwen2.5:1.5b (paridad CPU)
+EVAL_SET = "100"   # set de evaluacion: "100" (default, 40/30/30) o "12" (original)
+EVAL_FILE = "eval_questions_100.json" if EVAL_SET == "100" else "eval_questions.json"
+SUF = "_100" if EVAL_SET == "100" else ""
+N_Q = 100 if EVAL_SET == "100" else 12
 TIME_BUDGET_MIN = 90   # tope de tiempo para el run real con ragas (muestras no hechas = skipped, no numeros)
 """),
         repo_setup_cell(),
@@ -5835,7 +5888,7 @@ TIME_BUDGET_MIN = 90   # tope de tiempo para el run real con ragas (muestras no 
         md("## Prerrequisitos: trazas y retrievals de los notebooks 05 y 06\n\n"
            "El cálculo determinista inline lee los nombres de CPU "
            "(`retrieval.json`, `run_trace.jsonl`, ...), pero en Colab los notebooks 05 y 06 "
-           "escriben las trazas como `run_trace_colab.jsonl` (y variantes). Esta celda "
+           "escriben las trazas como `run_trace_colab{SUF}.jsonl` (y variantes). Esta celda "
            "verifica que existan los 6 insumos, te pide subirlos si faltan, y alinea los "
            "nombres (copia `run_trace_*_colab.jsonl` -> `run_trace_*.jsonl`) para que "
            "el cálculo inline los lea con los nombres de CPU."),
@@ -5847,12 +5900,12 @@ BASE = Path(REPO) / "rag_baseline"
 
 # (nombre Colab, nombre que espera el calculo determinista, quién lo produce)
 NEEDED = [
-    ("retrieval.json", "retrieval.json", "NB05 (denso)"),
-    ("run_trace_colab.jsonl", "run_trace.jsonl", "NB05 (denso)"),
-    ("retrieval_hybrid.json", "retrieval_hybrid.json", "NB06 (híbrido)"),
-    ("run_trace_hybrid_colab.jsonl", "run_trace_hybrid.jsonl", "NB06 (híbrido)"),
-    ("retrieval_expanded.json", "retrieval_expanded.json", "NB06 (expansión)"),
-    ("run_trace_expanded_colab.jsonl", "run_trace_expanded.jsonl", "NB06 (expansión)"),
+    (f"retrieval{SUF}.json", f"retrieval{SUF}.json", "NB05 (denso)"),
+    (f"run_trace_colab{SUF}.jsonl", f"run_trace{SUF}.jsonl", "NB05 (denso)"),
+    (f"retrieval_hybrid{SUF}.json", f"retrieval_hybrid{SUF}.json", "NB06 (híbrido)"),
+    (f"run_trace_hybrid_colab{SUF}.jsonl", f"run_trace_hybrid{SUF}.jsonl", "NB06 (híbrido)"),
+    (f"retrieval_expanded{SUF}.json", f"retrieval_expanded{SUF}.json", "NB06 (expansión)"),
+    (f"run_trace_expanded_colab{SUF}.jsonl", f"run_trace_expanded{SUF}.jsonl", "NB06 (expansión)"),
 ]
 
 
@@ -5902,7 +5955,7 @@ print("prerrequisitos OK: trazas y retrievals de 05/06 listos.")
            "(mismas definiciones, mismos outputs): precision y recall de contexto "
            "desde los traces de retrieval + ground truth auditable, faithfulness por "
            "chequeo de claims contra el contexto condensado, relevancy como proxy de "
-           "coseno. Escribe `metrics_ragas.json` igual que en local. En local: denso "
+           "coseno. Escribe `metrics_ragas{SUF}.json` igual que en local. En local: denso "
            "recall 0.47 / faithfulness 0.97, híbrido 0.53 / 0.97, expansión 1.00 / 0.98."),
         code(r"""
 import json, re, unicodedata
@@ -5910,25 +5963,31 @@ from pathlib import Path
 
 BASE = Path(REPO) / "rag_baseline"
 RAGAS_DIR = BASE / "ragas"
-GT = json.load(open(RAGAS_DIR / "ground_truth_evidence.json"))
+GT = json.load(open(RAGAS_DIR / f"ground_truth_evidence{SUF}.json"))
 GT_BY_ID = {q["id"]: q for q in GT["questions"]}
 
 VARIANTS = {
-    "dense": {"retrieval": "retrieval.json", "trace": "run_trace.jsonl"},
-    "hybrid": {"retrieval": "retrieval_hybrid.json", "trace": "run_trace_hybrid.jsonl"},
-    "expanded": {"retrieval": "retrieval_expanded.json", "trace": "run_trace_expanded.jsonl"},
+    "dense": {"retrieval": f"retrieval{SUF}.json", "trace": f"run_trace{SUF}.jsonl"},
+    "hybrid": {"retrieval": f"retrieval_hybrid{SUF}.json", "trace": f"run_trace_hybrid{SUF}.jsonl"},
+    "expanded": {"retrieval": f"retrieval_expanded{SUF}.json", "trace": f"run_trace_expanded{SUF}.jsonl"},
 }
 
 # Veredictos de exactitud de los resultados publicados (mismo scorer).
-EXACTNESS = {
-    "dense": {"Q6", "Q11"},
-    "hybrid": {"Q1", "Q11"},
-    # Q11 expanded es "correcta con alucinacion" en results_expanded.md: la
-    # sustancia es correcta (Digital@FEMSA -> Spin) pero el scorer marca '328';
-    # el conteo publicado es 5/12, asi que Q11 NO esta en el conjunto correcto.
-    "expanded": {"Q1", "Q4", "Q6", "Q8", "Q10"},
-}
-EXACTNESS_NOTES = {"expanded": {"Q11": "correcta con alucinacion segun el scorer (artefacto: '328' = 32.8% real, p.34)"}}
+# Solo existen para el set de 12 (runs en CPU); con el set de 100 no hay
+# run previo: los conjuntos quedan vacios y se llenan tras el run.
+if EVAL_SET == "12":
+    EXACTNESS = {
+        "dense": {"Q6", "Q11"},
+        "hybrid": {"Q1", "Q11"},
+        # Q11 expanded es "correcta con alucinacion" en results_expanded.md: la
+        # sustancia es correcta (Digital@FEMSA -> Spin) pero el scorer marca '328';
+        # el conteo publicado es 5/12, asi que Q11 NO esta en el conjunto correcto.
+        "expanded": {"Q1", "Q4", "Q6", "Q8", "Q10"},
+    }
+    EXACTNESS_NOTES = {"expanded": {"Q11": "correcta con alucinacion segun el scorer (artefacto: '328' = 32.8% real, p.34)"}}
+else:
+    EXACTNESS = {"dense": set(), "hybrid": set(), "expanded": set()}
+    EXACTNESS_NOTES = {}
 
 
 def norm_text(s):
@@ -6078,7 +6137,7 @@ for name in VARIANTS:
             "exactness_note": EXACTNESS_NOTES.get(name, {}).get(qid, ""),
         }
     out["variants"][name] = {"per_question": per_q}
-json.dump(out, open(RAGAS_DIR / "metrics_ragas.json", "w"), ensure_ascii=False, indent=1)
+json.dump(out, open(RAGAS_DIR / f"metrics_ragas{SUF}.json", "w"), ensure_ascii=False, indent=1)
 print("wrote metrics_ragas.json (precision/recall/faithfulness; relevancy pending)")
 
 # Tabla resumen (promedios; recall excluye Q9, que es null, no 0).
@@ -6089,7 +6148,7 @@ for name in VARIANTS:
     rec = [v["context_recall"] for v in pq.values() if v["context_recall"] is not None]
     fai = [v["faithfulness"] for v in pq.values() if v["faithfulness"] is not None]
     n_exact = sum(1 for v in pq.values() if v["exactness_correct"])
-    print(f"{name:<10}{sum(prec) / len(prec):>11.2f}{sum(rec) / len(rec):>9.2f}{sum(fai) / len(fai):>14.2f}{n_exact:>8}/12")
+    print(f"{name:<10}{sum(prec) / len(prec):>11.2f}{sum(rec) / len(rec):>9.2f}{sum(fai) / len(fai):>14.2f}{n_exact:>8}/{len(pq)}")
 """),
         code(r"""
 # answer_relevancy (proxy): coseno entre embeddings all-MiniLM-L6-v2 de la
@@ -6103,11 +6162,11 @@ from sentence_transformers import SentenceTransformer
 
 BASE = Path(REPO) / "rag_baseline"
 RAGAS_DIR = BASE / "ragas"
-TRACES = {"dense": "run_trace.jsonl", "hybrid": "run_trace_hybrid.jsonl", "expanded": "run_trace_expanded.jsonl"}
+TRACES = {"dense": f"run_trace{SUF}.jsonl", "hybrid": f"run_trace_hybrid{SUF}.jsonl", "expanded": f"run_trace_expanded{SUF}.jsonl"}
 
 t0 = time.time()
 model = SentenceTransformer("all-MiniLM-L6-v2")
-metrics = json.load(open(RAGAS_DIR / "metrics_ragas.json"))
+metrics = json.load(open(RAGAS_DIR / f"metrics_ragas{SUF}.json"))
 for name, trace_file in TRACES.items():
     trace = [json.loads(l) for l in open(BASE / trace_file)]
     qs = [t["question"] for t in trace]
@@ -6118,7 +6177,7 @@ for name, trace_file in TRACES.items():
         metrics["variants"][name]["per_question"][t["id"]]["answer_relevancy"] = round(float(np.dot(a, b)), 4)
     print(name, "done")
 metrics["answer_relevancy_method"] = "proxy: cosine(all-MiniLM-L6-v2(question), all-MiniLM-L6-v2(answer)); RAGAS defines it via LLM-generated questions, not used here"
-json.dump(metrics, open(RAGAS_DIR / "metrics_ragas.json", "w"), ensure_ascii=False, indent=1)
+json.dump(metrics, open(RAGAS_DIR / f"metrics_ragas{SUF}.json", "w"), ensure_ascii=False, indent=1)
 print("relevancy computed in %.1fs" % (time.time() - t0))
 
 # Tabla resumen de relevancy (promedio por variante).
@@ -6157,8 +6216,8 @@ emb = LangchainEmbeddingsWrapper(
                           model_kwargs={"device": "cuda"}))
 print("juez Ollama listo:", JUDGE_OLLAMA_MODEL)
 
-trace = [json.loads(l) for l in open(BASE / "run_trace.jsonl")][0]  # denso Q1
-gt = json.load(open(RAGAS_DIR / "ground_truth_evidence.json"))["questions"][0]
+trace = [json.loads(l) for l in open(BASE / f"run_trace{SUF}.jsonl")][0]  # denso Q1
+gt = json.load(open(RAGAS_DIR / f"ground_truth_evidence{SUF}.json"))["questions"][0]
 contexts = [c for c in trace["context"].split("\\n\\n") if c.strip()]
 sample = SingleTurnSample(
     user_input=trace["question"],
@@ -6176,7 +6235,7 @@ print(f"piloto: {time.time() - t1:.1f}s")
 print(result.to_pandas().to_string())
 """),
         md("## 3. Run real completo (acotado por tiempo)\n\n"
-           "36 muestras (12 preguntas × 3 variantes), una llamada `evaluate()` por "
+           "3 × N_Q muestras (N_Q preguntas × 3 variantes), una llamada `evaluate()` por "
            "muestra con las 4 métricas, como en el piloto de CPU (`pilot_timeout_900.py`). "
            "Tope `TIME_BUDGET_MIN`: las muestras que no se alcanzan quedan como "
            "`skipped`, no como números. Al final se comparan los valores juzgados por "
@@ -6197,7 +6256,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 BASE = Path(REPO) / "rag_baseline"
 RAGAS_DIR = BASE / "ragas"
-OUT = RAGAS_DIR / "metrics_ragas_llm_colab.json"
+OUT = RAGAS_DIR / f"metrics_ragas_llm_colab{SUF}.json"
 
 judge = ChatOllama(model=JUDGE_OLLAMA_MODEL, base_url="http://localhost:11434",
                    temperature=0, num_predict=512)
@@ -6209,13 +6268,13 @@ METRICS = [ContextPrecision(), ContextRecall(), Faithfulness(), AnswerRelevancy(
 METRIC_NAMES = ["context_precision", "context_recall", "faithfulness", "answer_relevancy"]
 run_config = RunConfig(timeout=600)
 
-eval_q = {q["id"]: q for q in json.load(open(Path(REPO) / "memo/eval_questions.json"))["questions"]}
-det = json.load(open(RAGAS_DIR / "metrics_ragas.json"))["variants"]
-gt = {q["id"]: q for q in json.load(open(RAGAS_DIR / "ground_truth_evidence.json"))["questions"]}
+eval_q = {q["id"]: q for q in json.load(open(Path(REPO) / "memo" / EVAL_FILE))["questions"]}
+det = json.load(open(RAGAS_DIR / f"metrics_ragas{SUF}.json"))["variants"]
+gt = {q["id"]: q for q in json.load(open(RAGAS_DIR / f"ground_truth_evidence{SUF}.json"))["questions"]}
 
-VARIANTS = [("dense", "run_trace.jsonl"),
-            ("hybrid", "run_trace_hybrid.jsonl"),
-            ("expanded", "run_trace_expanded.jsonl")]
+VARIANTS = [("dense", f"run_trace{SUF}.jsonl"),
+            ("hybrid", f"run_trace_hybrid{SUF}.jsonl"),
+            ("expanded", f"run_trace_expanded{SUF}.jsonl")]
 traces = {}
 for name, fname in VARIANTS:
     traces[name] = {r["id"]: r for r in (json.loads(l) for l in open(BASE / fname))}
@@ -6253,7 +6312,7 @@ for name, _ in VARIANTS:
               f"({results[f'{name}/{qid}'].get('seconds', '?')}s)", flush=True)
 
 done = sum(1 for v in results.values() if v["status"] == "ok")
-print(f"\\ncompletadas: {done}/36 en {(time.time() - t_start) / 60:.1f} min")
+print(f"\\ncompletadas: {done}/{3 * len(eval_q)} en {(time.time() - t_start) / 60:.1f} min")
 json.dump({"judge": f"ollama {JUDGE_OLLAMA_MODEL} (Colab T4)",
            "results": results}, open(OUT, "w"), ensure_ascii=False, indent=2)
 print(f"-> {OUT}")
@@ -6266,7 +6325,8 @@ print(f"-> {OUT}")
         code("""
 import json
 
-OUT = REPO + "/rag_baseline/ragas/metrics_ragas_llm_colab.json"
+OUT = REPO + f"/rag_baseline/ragas/metrics_ragas_llm_colab{SUF}.json"
+N_TOTAL = 3 * len(json.load(open(REPO + "/memo/" + EVAL_FILE))["questions"])
 try:
     data = json.load(open(OUT))["results"]
 except FileNotFoundError:
@@ -6275,7 +6335,7 @@ except FileNotFoundError:
     data = {}
 
 ok = {k: v for k, v in data.items() if v.get("status") == "ok"}
-print(f"muestras juzgadas por LLM: {len(ok)}/36")
+print(f"muestras juzgadas por LLM: {len(ok)}/{N_TOTAL}")
 for k, v in sorted(ok.items()):
     lj, dt = v["llm_judged"], v["deterministic"]
     diffs = " | ".join(
@@ -6285,10 +6345,10 @@ for k, v in sorted(ok.items()):
     print(f"{k}: {diffs}")
 """),
         *save_cell([
-            ("rag_baseline/ragas/metrics_ragas.json", "Métricas RAGAS deterministas (actualizadas en Colab)", True),
-            ("rag_baseline/ragas/metrics_ragas_llm_colab.json", "Run real ragas con juez Ollama (36 muestras)", False),
-            ("rag_baseline/ragas/ground_truth_evidence.json", "Ground truth auditable", False),
-        ], note="Si el run real no completó muestras, `metrics_ragas_llm_colab.json` no "
+            ("rag_baseline/ragas/metrics_ragas{SUF}.json", "Métricas RAGAS deterministas (actualizadas en Colab)", True),
+            ("rag_baseline/ragas/metrics_ragas_llm_colab{SUF}.json", "Run real ragas con juez Ollama (3x{N_Q} muestras)", False),
+            ("rag_baseline/ragas/ground_truth_evidence{SUF}.json", "Ground truth auditable", False),
+        ], note="Si el run real no completó muestras, `metrics_ragas_llm_colab{SUF}.json` no "
                 "existe y la celda lo marca como pendiente: las deterministas siguen "
                 "siendo las cifras citables."),
     ]
