@@ -109,7 +109,7 @@ femsa-rag-graph-memo/
     ├── 04_memo_evaluacion.ipynb  # Evaluación MEMO + set ampliado opcional
     ├── 05_rag_baseline.ipynb     # RAG vectorial con lector vía Ollama
     ├── 06_rag_hibrido_y_expansion.ipynb  # Híbrido + expansión, lector vía Ollama
-    ├── 07_rag_agentico.ipynb     # Agente con Qwen2.5-7B vía Ollama
+    ├── 07_rag_agentico.ipynb     # RAG agéntico como juez (selecciona chunks del híbrido), 7B vía Ollama
     ├── 08_ragas.ipynb           # RAGAS determinista + run real con juez en GPU
     ├── build_notebooks.py        # Generador reproducible de los notebooks
     ├── validate_notebooks.py     # Valida JSON nbformat + compilación de celdas
@@ -249,7 +249,7 @@ Resultado: **2/12** (correctas Q4 y Q6, +1 parcial en Q3), 2/12 con alucinación
 
 ### En Google Colab: los 9 notebooks
 
-Todo el experimento también está como notebooks en [`colab/`](colab/README.md), para correrlo en una GPU T4 con Drive para persistencia y Ollama dentro de la instancia para los modelos intermedios (lector, ejecutivo, juez RAGAS y LLM del agente). Cada notebook lleva su propio setup de Ollama (idempotente) y puede correrse solo; el orden es 00 → 08. El notebook 03 entrena MEMO v3 con el modelo 1.5B y el dataset ampliado a 1,500–2,000 pares, y el 07 corre el agente con Qwen2.5-7B. **Nota honesta:** los notebooks se validaron aquí (JSON nbformat válido, celdas que compilan, archivos referenciados existen), pero no se corrieron de punta a punta en Colab todavía.
+Todo el experimento también está como notebooks en [`colab/`](colab/README.md), para correrlo en una GPU T4 con Drive para persistencia y Ollama dentro de la instancia para los modelos intermedios (lector, ejecutivo, juez RAGAS y LLM del agente). Cada notebook es autocontenido: lleva su propio setup (Drive, repo y Ollama idempotente donde toca) y los datos procesados se toman primero de Drive, si no se suben a la instancia y solo como último recurso se regeneran; al final cada notebook guarda sus modelos y outputs en Drive. El orden es 00 → 08. El notebook 03 entrena MEMO v3 con el modelo 1.5B y el dataset ampliado a 1,500–2,000 pares, y el 07 corre el RAG agéntico como juez: califica de golpe los 10 chunks del RAG híbrido y selecciona los útiles con un juez (el agente ReAct queda como negativo documentado, 2/12). **Nota honesta:** los notebooks se validaron aquí (JSON nbformat válido, celdas que compilan, archivos referenciados existen), pero no se corrieron de punta a punta en Colab todavía.
 
 ---
 
