@@ -17,7 +17,8 @@ PY := $(VENV_BIN)/python
 	train-memo train-memo-v2 eval-memo eval-memo-v2 \
 	rag-retrieve rag-answer rag-score \
 	rag-retrieve-hybrid rag-answer-hybrid rag-score-hybrid \
-	rag-expand rag-retrieve-expanded rag-answer-expanded rag-score-expanded
+	rag-expand rag-retrieve-expanded rag-answer-expanded rag-score-expanded \
+	ragas-metrics
 
 ## Check is python version of the project
 check-python-version:
@@ -173,3 +174,8 @@ rag-answer-expanded: rag-retrieve-expanded download-models
 ## Score the expanded RAG run and write rag_baseline/results_expanded.md
 rag-score-expanded: rag-answer-expanded
 	$(PY) rag_baseline/score_expanded.py
+
+## Compute RAGAS metrics (deterministic, from RAGAS definitions) for the 3 RAG variants (~2 s + ~36 s relevancy proxy)
+ragas-metrics: rag-score-expanded
+	$(PY) rag_baseline/ragas/compute_metrics.py
+	$(PY) rag_baseline/ragas/compute_relevancy.py

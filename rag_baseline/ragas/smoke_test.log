@@ -1,0 +1,26 @@
+/home/hatch/workspace/goals/rag-comparison-substack-post-with-femsa-2024-knowledge-graph/rag_baseline/ragas/smoke_test_ragas.py:22: DeprecationWarning: Importing AnswerRelevancy from 'ragas.metrics' is deprecated and will be removed in v1.0. Please use 'ragas.metrics.collections' instead. Example: from ragas.metrics.collections import AnswerRelevancy
+  from ragas.metrics import AnswerRelevancy, ContextPrecision, ContextRecall, Faithfulness
+/home/hatch/workspace/goals/rag-comparison-substack-post-with-femsa-2024-knowledge-graph/rag_baseline/ragas/smoke_test_ragas.py:22: DeprecationWarning: Importing ContextPrecision from 'ragas.metrics' is deprecated and will be removed in v1.0. Please use 'ragas.metrics.collections' instead. Example: from ragas.metrics.collections import ContextPrecision
+  from ragas.metrics import AnswerRelevancy, ContextPrecision, ContextRecall, Faithfulness
+/home/hatch/workspace/goals/rag-comparison-substack-post-with-femsa-2024-knowledge-graph/rag_baseline/ragas/smoke_test_ragas.py:22: DeprecationWarning: Importing ContextRecall from 'ragas.metrics' is deprecated and will be removed in v1.0. Please use 'ragas.metrics.collections' instead. Example: from ragas.metrics.collections import ContextRecall
+  from ragas.metrics import AnswerRelevancy, ContextPrecision, ContextRecall, Faithfulness
+/home/hatch/workspace/goals/rag-comparison-substack-post-with-femsa-2024-knowledge-graph/rag_baseline/ragas/smoke_test_ragas.py:22: DeprecationWarning: Importing Faithfulness from 'ragas.metrics' is deprecated and will be removed in v1.0. Please use 'ragas.metrics.collections' instead. Example: from ragas.metrics.collections import Faithfulness
+  from ragas.metrics import AnswerRelevancy, ContextPrecision, ContextRecall, Faithfulness
+imports: 80.6s
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 4057.11it/s]
+/home/hatch/workspace/goals/rag-comparison-substack-post-with-femsa-2024-knowledge-graph/rag_baseline/ragas/smoke_test_ragas.py:36: DeprecationWarning: LangchainLLMWrapper is deprecated and will be removed in a future version. Use llm_factory instead: from openai import OpenAI; from ragas.llms import llm_factory; llm = llm_factory('gpt-4o-mini', client=OpenAI(api_key='...'))
+  llm = LangchainLLMWrapper(HuggingFacePipeline(pipeline=gen))
+judge loaded: 88.1s
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 23458.59it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+/home/hatch/workspace/goals/rag-comparison-substack-post-with-femsa-2024-knowledge-graph/rag_baseline/ragas/smoke_test_ragas.py:39: DeprecationWarning: LangchainEmbeddingsWrapper is deprecated and will be removed in a future version. Use the modern embedding providers instead: embedding_factory('openai', model='text-embedding-3-small', client=openai_client) or from ragas.embeddings import OpenAIEmbeddings, GoogleEmbeddings, HuggingFaceEmbeddings
+  emb = LangchainEmbeddingsWrapper(
+embeddings loaded: 104.3s
+Evaluating:   0%|          | 0/4 [00:00<?, ?it/s][transformers] The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+[transformers] The following generation flags are not valid and may be ignored: ['temperature']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+Exception raised in Job[0]: TimeoutError()
+Exception raised in Job[1]: TimeoutError()
+Exception raised in Job[2]: TimeoutError()
+Exception raised in Job[3]: TimeoutError()
+Evaluating:  25%|██▌       | 1/4 [03:00<09:01, 180.40s/it]Evaluating: 100%|██████████| 4/4 [03:00<00:00, 45.10s/it] 

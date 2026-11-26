@@ -1,0 +1,1741 @@
+{
+ "variants": {
+  "dense": {
+   "per_question": {
+    "Q1": {
+     "question": "¿Cuáles fueron los ingresos totales consolidados de FEMSA en 2024 y cuánto crecieron vs 2023?",
+     "retrieved_pages": [
+      88,
+      113,
+      30,
+      109,
+      17
+     ],
+     "ground_truth_pages": [
+      5,
+      11,
+      108,
+      109,
+      112
+     ],
+     "context_precision": 0.2,
+     "context_recall": 0.5,
+     "recall_detail": {
+      "covered": 1,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "40236",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "31",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.5403
+    },
+    "Q2": {
+     "question": "¿Cuántos usuarios activos tuvo Spin by OXXO en 2024?",
+     "retrieved_pages": [
+      5,
+      35,
+      33,
+      88,
+      100
+     ],
+     "ground_truth_pages": [
+      13,
+      33,
+      35
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 1,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.1094
+    },
+    "Q3": {
+     "question": "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024 y cuántas aperturas hubo?",
+     "retrieved_pages": [
+      88,
+      17,
+      55,
+      109,
+      16
+     ],
+     "ground_truth_pages": [
+      21,
+      23,
+      112,
+      114
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 0,
+     "abstention": true,
+     "claims": [],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.2621
+    },
+    "Q4": {
+     "question": "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?",
+     "retrieved_pages": [
+      88,
+      80,
+      83,
+      30,
+      109
+     ],
+     "ground_truth_pages": [
+      21,
+      114,
+      126
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 0,
+     "abstention": true,
+     "claims": [],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.289
+    },
+    "Q5": {
+     "question": "¿Qué división tuvo el mayor crecimiento porcentual de ingresos en 2024: Proximidad Europa o Coca-Cola FEMSA?",
+     "retrieved_pages": [
+      30,
+      28,
+      10,
+      114,
+      27
+     ],
+     "ground_truth_pages": [
+      5,
+      112
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 0.8,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "10",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "114",
+       "type": "numeric",
+       "supported": false
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.7087
+    },
+    "Q6": {
+     "question": "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+     "retrieved_pages": [
+      30,
+      114,
+      10,
+      27,
+      112
+     ],
+     "ground_truth_pages": [
+      112,
+      113,
+      114
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 2,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "307197",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "279793",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.768
+    },
+    "Q7": {
+     "question": "¿Qué creció más en usuarios, Spin by OXXO o Spin Premia?",
+     "retrieved_pages": [
+      35,
+      5,
+      33,
+      13,
+      100
+     ],
+     "ground_truth_pages": [
+      13,
+      33,
+      34,
+      35,
+      113
+     ],
+     "context_precision": 0.6,
+     "context_recall": 0.5,
+     "recall_detail": {
+      "covered": 2,
+      "total": 4
+     },
+     "faithfulness": 1.0,
+     "n_claims": 4,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "24.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Spin by OXXO",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Spin Premia",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.8522
+    },
+    "Q8": {
+     "question": "¿En qué países opera Proximidad Américas según el informe?",
+     "retrieved_pages": [
+      109,
+      17,
+      88,
+      21,
+      151
+     ],
+     "ground_truth_pages": [
+      10,
+      21,
+      22,
+      55,
+      92,
+      121
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Mexico",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Colombia",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.8722
+    },
+    "Q9": {
+     "question": "¿Qué porcentaje de los ingresos consolidados 2024 representan Proximidad Américas y Coca-Cola FEMSA juntas?",
+     "retrieved_pages": [
+      30,
+      10,
+      114,
+      28,
+      27
+     ],
+     "ground_truth_pages": [],
+     "context_precision": 0.0,
+     "context_recall": null,
+     "recall_detail": {
+      "covered": 0,
+      "total": 0,
+      "note": "no hay evidencia en el corpus (cifras calculadas, no impresas)"
+     },
+     "faithfulness": 0.8333333333333334,
+     "n_claims": 6,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "23729",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "19536",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "43265",
+       "type": "numeric",
+       "supported": false
+      },
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.756
+    },
+    "Q10": {
+     "question": "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+     "retrieved_pages": [
+      23,
+      109,
+      22,
+      13,
+      114
+     ],
+     "ground_truth_pages": [
+      3,
+      5,
+      8,
+      12,
+      14,
+      42,
+      115,
+      116
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 1,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "Mexico",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.8255
+    },
+    "Q11": {
+     "question": "¿Cómo evolucionó la iniciativa digital de FEMSA en 2024?",
+     "retrieved_pages": [
+      34,
+      12,
+      5,
+      23,
+      113
+     ],
+     "ground_truth_pages": [
+      5,
+      34
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 6,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "24",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "FEMSA Forward",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Digital@FEMSA",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Spin Premia",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Mexico",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.5678
+    },
+    "Q12": {
+     "question": "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?",
+     "retrieved_pages": [
+      88,
+      109,
+      29,
+      100,
+      17
+     ],
+     "ground_truth_pages": [
+      5,
+      112,
+      114
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "10",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Argentina",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.76
+    }
+   }
+  },
+  "hybrid": {
+   "per_question": {
+    "Q1": {
+     "question": "¿Cuáles fueron los ingresos totales consolidados de FEMSA en 2024 y cuánto crecieron vs 2023?",
+     "retrieved_pages": [
+      88,
+      113,
+      16,
+      112,
+      115
+     ],
+     "ground_truth_pages": [
+      5,
+      11,
+      108,
+      109,
+      112
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 2,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "781585",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "11.2",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.6498
+    },
+    "Q2": {
+     "question": "¿Cuántos usuarios activos tuvo Spin by OXXO en 2024?",
+     "retrieved_pages": [
+      35,
+      5,
+      33,
+      36,
+      4
+     ],
+     "ground_truth_pages": [
+      13,
+      33,
+      35
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Spin by OXXO",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.7797
+    },
+    "Q3": {
+     "question": "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024 y cuántas aperturas hubo?",
+     "retrieved_pages": [
+      16,
+      88,
+      75,
+      72,
+      55
+     ],
+     "ground_truth_pages": [
+      21,
+      23,
+      112,
+      114
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 0,
+     "abstention": true,
+     "claims": [],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.2621
+    },
+    "Q4": {
+     "question": "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?",
+     "retrieved_pages": [
+      83,
+      100,
+      85,
+      88,
+      92
+     ],
+     "ground_truth_pages": [
+      21,
+      114,
+      126
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "12",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "OXXO GAS",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.883
+    },
+    "Q5": {
+     "question": "¿Qué división tuvo el mayor crecimiento porcentual de ingresos en 2024: Proximidad Europa o Coca-Cola FEMSA?",
+     "retrieved_pages": [
+      28,
+      88,
+      128,
+      80,
+      100
+     ],
+     "ground_truth_pages": [
+      5,
+      112
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 0,
+     "abstention": true,
+     "claims": [],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.34
+    },
+    "Q6": {
+     "question": "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+     "retrieved_pages": [
+      88,
+      112,
+      79,
+      27,
+      107
+     ],
+     "ground_truth_pages": [
+      112,
+      113,
+      114
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 2,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "307197",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "128736",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.768
+    },
+    "Q7": {
+     "question": "¿Qué creció más en usuarios, Spin by OXXO o Spin Premia?",
+     "retrieved_pages": [
+      35,
+      5,
+      33,
+      19,
+      13
+     ],
+     "ground_truth_pages": [
+      13,
+      33,
+      34,
+      35,
+      113
+     ],
+     "context_precision": 0.6,
+     "context_recall": 0.5,
+     "recall_detail": {
+      "covered": 2,
+      "total": 4
+     },
+     "faithfulness": 0.8,
+     "n_claims": 10,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "24.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "275",
+       "type": "numeric",
+       "supported": false
+      },
+      {
+       "claim": "24.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "16",
+       "type": "numeric",
+       "supported": false
+      },
+      {
+       "claim": "50",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Spin by OXXO",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Spin Premia",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.7829
+    },
+    "Q8": {
+     "question": "¿En qué países opera Proximidad Américas según el informe?",
+     "retrieved_pages": [
+      88,
+      17,
+      21,
+      120,
+      80
+     ],
+     "ground_truth_pages": [
+      10,
+      21,
+      22,
+      55,
+      92,
+      121
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 2,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Mexico",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.8862
+    },
+    "Q9": {
+     "question": "¿Qué porcentaje de los ingresos consolidados 2024 representan Proximidad Américas y Coca-Cola FEMSA juntas?",
+     "retrieved_pages": [
+      28,
+      128,
+      107,
+      88,
+      75
+     ],
+     "ground_truth_pages": [],
+     "context_precision": 0.0,
+     "context_recall": null,
+     "recall_detail": {
+      "covered": 0,
+      "total": 0,
+      "note": "no hay evidencia en el corpus (cifras calculadas, no impresas)"
+     },
+     "faithfulness": 1.0,
+     "n_claims": 0,
+     "abstention": true,
+     "claims": [],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.2094
+    },
+    "Q10": {
+     "question": "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+     "retrieved_pages": [
+      13,
+      75,
+      4,
+      34,
+      117
+     ],
+     "ground_truth_pages": [
+      3,
+      5,
+      8,
+      12,
+      14,
+      42,
+      115,
+      116
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 2,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "1",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.8725
+    },
+    "Q11": {
+     "question": "¿Cómo evolucionó la iniciativa digital de FEMSA en 2024?",
+     "retrieved_pages": [
+      12,
+      100,
+      151,
+      34,
+      128
+     ],
+     "ground_truth_pages": [
+      5,
+      34
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 0.8,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Digital@FEMSA",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Spin",
+       "type": "entity",
+       "supported": false
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.7209
+    },
+    "Q12": {
+     "question": "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?",
+     "retrieved_pages": [
+      88,
+      16,
+      75,
+      99,
+      96
+     ],
+     "ground_truth_pages": [
+      5,
+      112,
+      114
+     ],
+     "context_precision": 0.0,
+     "context_recall": 0.0,
+     "recall_detail": {
+      "covered": 0,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 0,
+     "abstention": true,
+     "claims": [],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.3829
+    }
+   }
+  },
+  "expanded": {
+   "per_question": {
+    "Q1": {
+     "question": "¿Cuáles fueron los ingresos totales consolidados de FEMSA en 2024 y cuánto crecieron vs 2023?",
+     "retrieved_pages": [
+      112,
+      113,
+      115,
+      114,
+      108
+     ],
+     "ground_truth_pages": [
+      5,
+      11,
+      108,
+      109,
+      112
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 2,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 4,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "781585",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "11.2",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2023",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.581
+    },
+    "Q2": {
+     "question": "¿Cuántos usuarios activos tuvo Spin by OXXO en 2024?",
+     "retrieved_pages": [
+      33,
+      19,
+      13,
+      5,
+      35
+     ],
+     "ground_truth_pages": [
+      13,
+      33,
+      35
+     ],
+     "context_precision": 0.6,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 1,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "8.6",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.1094
+    },
+    "Q3": {
+     "question": "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024 y cuántas aperturas hubo?",
+     "retrieved_pages": [
+      114,
+      19,
+      22,
+      112,
+      21
+     ],
+     "ground_truth_pages": [
+      21,
+      23,
+      112,
+      114
+     ],
+     "context_precision": 0.6,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 2,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "26322",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "438",
+       "type": "numeric",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.648
+    },
+    "Q4": {
+     "question": "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?",
+     "retrieved_pages": [
+      21,
+      114,
+      85,
+      82,
+      100
+     ],
+     "ground_truth_pages": [
+      21,
+      114,
+      126
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "571",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "OXXO GAS",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.7581
+    },
+    "Q5": {
+     "question": "¿Qué división tuvo el mayor crecimiento porcentual de ingresos en 2024: Proximidad Europa o Coca-Cola FEMSA?",
+     "retrieved_pages": [
+      112,
+      114,
+      29,
+      25,
+      10
+     ],
+     "ground_truth_pages": [
+      5,
+      112
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 8,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "113",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "10.3",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "307197",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "278520",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "2023",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.6021
+    },
+    "Q6": {
+     "question": "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+     "retrieved_pages": [
+      112,
+      114,
+      19,
+      13,
+      10
+     ],
+     "ground_truth_pages": [
+      112,
+      113,
+      114
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 2,
+      "total": 2
+     },
+     "faithfulness": 1.0,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "307197",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "279793",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.7572
+    },
+    "Q7": {
+     "question": "¿Qué creció más en usuarios, Spin by OXXO o Spin Premia?",
+     "retrieved_pages": [
+      33,
+      19,
+      35,
+      13,
+      34
+     ],
+     "ground_truth_pages": [
+      13,
+      33,
+      34,
+      35,
+      113
+     ],
+     "context_precision": 0.8,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 4,
+      "total": 4
+     },
+     "faithfulness": 1.0,
+     "n_claims": 4,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "31.5",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "32.8",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Spin by OXXO",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Spin Premia",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.7954
+    },
+    "Q8": {
+     "question": "¿En qué países opera Proximidad Américas según el informe?",
+     "retrieved_pages": [
+      10,
+      21,
+      112,
+      19,
+      20
+     ],
+     "ground_truth_pages": [
+      10,
+      21,
+      22,
+      55,
+      92,
+      121
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 0.8947368421052632,
+     "n_claims": 19,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "18",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Proximidad Americas",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Mexico",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Colombia",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Chile",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Peru",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Argentina",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Austria",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Brasil",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Costa Rica",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Ecuador",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Espana",
+       "type": "entity",
+       "supported": false
+      },
+      {
+       "claim": "Guatemala",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Honduras",
+       "type": "entity",
+       "supported": false
+      },
+      {
+       "claim": "Paises Bajos",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Nicaragua",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Panama",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Uruguay",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.6928
+    },
+    "Q9": {
+     "question": "¿Qué porcentaje de los ingresos consolidados 2024 representan Proximidad Américas y Coca-Cola FEMSA juntas?",
+     "retrieved_pages": [
+      112,
+      114,
+      19,
+      127,
+      10
+     ],
+     "ground_truth_pages": [],
+     "context_precision": 0.0,
+     "context_recall": null,
+     "recall_detail": {
+      "covered": 0,
+      "total": 0,
+      "note": "no hay evidencia en el corpus (cifras calculadas, no impresas)"
+     },
+     "faithfulness": 1.0,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "781585",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "11.2",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "307197",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Coca-Cola FEMSA",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.7484
+    },
+    "Q10": {
+     "question": "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+     "retrieved_pages": [
+      34,
+      13,
+      12,
+      8,
+      4
+     ],
+     "ground_truth_pages": [
+      3,
+      5,
+      8,
+      12,
+      14,
+      42,
+      115,
+      116
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 2,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "FEMSA Forward",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Mexico",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": true,
+     "exactness_note": "",
+     "answer_relevancy": 0.8428
+    },
+    "Q11": {
+     "question": "¿Cómo evolucionó la iniciativa digital de FEMSA en 2024?",
+     "retrieved_pages": [
+      34,
+      12,
+      66,
+      13,
+      4
+     ],
+     "ground_truth_pages": [
+      5,
+      34
+     ],
+     "context_precision": 0.2,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 0.8,
+     "n_claims": 5,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "32.8",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "31",
+       "type": "numeric",
+       "supported": false
+      },
+      {
+       "claim": "Digital@FEMSA",
+       "type": "entity",
+       "supported": true
+      },
+      {
+       "claim": "Spin Premia",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "correcta con alucinacion segun el scorer (artefacto: '328' = 32.8% real, p.34)",
+     "answer_relevancy": 0.6069
+    },
+    "Q12": {
+     "question": "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?",
+     "retrieved_pages": [
+      29,
+      112,
+      114,
+      30,
+      26
+     ],
+     "ground_truth_pages": [
+      5,
+      112,
+      114
+     ],
+     "context_precision": 0.4,
+     "context_recall": 1.0,
+     "recall_detail": {
+      "covered": 1,
+      "total": 1
+     },
+     "faithfulness": 1.0,
+     "n_claims": 3,
+     "abstention": false,
+     "claims": [
+      {
+       "claim": "2024",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "14.2",
+       "type": "numeric",
+       "supported": true
+      },
+      {
+       "claim": "Salud",
+       "type": "entity",
+       "supported": true
+      }
+     ],
+     "exactness_correct": false,
+     "exactness_note": "",
+     "answer_relevancy": 0.733
+    }
+   }
+  }
+ },
+ "method": "deterministic (see ragas/README.md)",
+ "judge": null,
+ "answer_relevancy_method": "proxy: cosine(all-MiniLM-L6-v2(question), all-MiniLM-L6-v2(answer)); RAGAS defines it via LLM-generated questions, not used here"
+}

@@ -84,6 +84,12 @@ femsa-rag-graph-memo/
     ├── expand_queries.py / expanded_queries.json  # Expansión de queries: traducción + keywords de dominio
     ├── retrieve_expanded.py / score_expanded.py / results_expanded.md  # Variante híbrida + expansión
     ├── retrieval_expanded.json / run_trace_expanded.jsonl  # (se generan con make rag-retrieve-expanded / rag-answer-expanded)
+    ├── ragas/                # Métricas RAGAS (deterministas) de las 3 variantes RAG
+    │   ├── compute_metrics.py / compute_relevancy.py  # precision/recall/faithfulness + proxy de relevancy
+    │   ├── ground_truth_evidence.json  # Evidencia por pregunta (auditable, por grep)
+    │   ├── metrics_ragas.json / results_ragas.md  # Resultados por pregunta/variante/métrica
+    │   ├── smoke_test_ragas.py / smoke_test.log  # 1 pregunta con la librería ragas real (juez local 1.5B: timeout)
+    │   └── README.md         # Runbook RAGAS
     └── README.md             # Runbook del baseline RAG y sus variantes
 ```
 
@@ -103,6 +109,18 @@ Mismo corpus (FEMSA 2024), mismas 12 preguntas en 3 niveles (hecho directo, comp
 | **RAG vectorial** (MiniLM top-5 + lector Qwen2.5-1.5B) | **2/12** (correctas Q6 y Q11; techo real 9/12: 3 cifras esperadas no están en el informe; detalle en [rag_baseline/results.md](rag_baseline/results.md)) | **2/12** |
 | **RAG híbrido** (BM25 Okapi + MiniLM, RRF k=60, mismo lector/scorer) | **2/12** (correctas Q1 y Q11; no cerró la brecha de retrieval: las preguntas están en español y el corpus en inglés, y los tokens discriminativos viven en la respuesta, no en la pregunta; detalle en [rag_baseline/results_hybrid.md](rag_baseline/results_hybrid.md)) | **1/12** |
 | **RAG híbrido + expansión de queries** (traducción manual al inglés + mapa de términos de dominio, mismo retrieval híbrido/lector/scorer, sin respuestas filtradas) | **5/12** (correctas Q1, Q4, Q6, Q8 y Q10; el primer arreglo del RAG que movió el marcador; el cuello de botella pasó del retrieval al lector; detalle en [rag_baseline/results_expanded.md](rag_baseline/results_expanded.md)) | 3/12 según el scorer (1/12 real: dos flags son artefactos, ver `results_expanded.md`) |
+
+### RAGAS: qué dice cada capa del RAG
+
+Misma exactitud, segunda lente: las 4 métricas estándar de RAGAS sobre las 3 variantes RAG (detalle en [rag_baseline/ragas/results_ragas.md](rag_baseline/ragas/results_ragas.md)).
+
+| Variante | context_precision | context_recall (pooled) | faithfulness | answer_relevancy (proxy) | Exactitud |
+|---|---:|---:|---:|---:|---:|
+| RAG vectorial denso | 0.183 | 8/17 = 0.471 | 0.969 | 0.609 | 2/12 |
+| RAG híbrido BM25+denso | 0.150 | 9/17 = 0.529 | 0.967 | 0.628 | 2/12 |
+| RAG híbrido + expansión | 0.400 | **17/17 = 1.000** | 0.975 | 0.656 | 5/12 |
+
+Lectura: la expansión arregló el retrieval por completo (recall 0.47 → 1.00; toda la evidencia llega al top-5), y la faithfulness es ~0.97 en las tres variantes mientras la exactitud es 2–5/12 — el lector casi no inventa números, **los elige mal del contexto**. El fallo dominante es selección, no invención, y ninguna de las cuatro métricas de RAGAS mide esa selección: por eso la exactitud numérica sigue siendo la métrica que decide, y por eso el grafo gana 12/12 (no selecciona, consulta). Honestidad sobre el método: la librería `ragas` 0.4.4 con el juez local Qwen2.5-1.5B en CPU no completó ni una métrica (timeout de 180 s por job en el smoke test, ver `rag_baseline/ragas/smoke_test.log`), así que estos números son **RAGAS en definición, calculados determinísticamente** desde los traces y un ground truth auditable por grep — no un run juzgado por GPT-4.
 
 El veredicto honesto: más datos (3.2×), más épocas (3×) y más LoRA (r=8 → r=32) fijaron las cifras simples y repetidas (571 estaciones, 307,197 vs 279,793) y bajaron las alucinaciones de 6/12 a 2/12, pero el sistema sigue fallando en todo lo que exige componer: sumar, comparar, atribuir un hecho a su división o nombrar una estrategia. En dos preguntas la memoria ya tenía el dato correcto y fue el ejecutivo quien lo estropeó al sintetizar. **La memoria en pesos es compresión con pérdida, y la pérdida se concentra justo donde se necesita precisión**: cifras exactas, comparaciones y agregaciones. El grafo no tiene ese problema porque la respuesta *es* el dato verificado.
 
@@ -159,6 +177,14 @@ make rag-score-expanded    # escribe rag_baseline/results_expanded.md
 
 Resultado: **5/12** (correctas Q1, Q4, Q6, Q8 y Q10), el primer arreglo del RAG que movió el marcador. Leer en `rag_baseline/results_expanded.md`. La expansión subió la cobertura literal en top-5 de 1/12 a 4/12 y el cuello de botella pasó del retrieval al lector (Q3 y Q12 ya traen el dato y el lector lo elige mal). La guardia anti-filtración de `expand_queries.py` aborta si la query lleva cifras esperadas o nombres-respuesta. Dos honestidades: Q7 tiene conflicto de ground-truth (el informe p.34 dice Spin +32.8% / Premia +31.5% y el lector dio exactamente eso; lo esperado +27.5%/+24.9% es del comunicado 4Q24, así que con la regla de Q3 sería 6/12) y Q8 es correcta por la regla de keywords aunque enumera 18 países del grupo, no solo los 4 de la división.
 
+### RAGAS (3 variantes RAG): recall 1.00 con expansión, faithfulness ~0.97
+
+```bash
+make ragas-metrics      # precision/recall/faithfulness (~2 s) + proxy de relevancy (~36 s)
+```
+
+Resultado: denso (precision 0.183, recall pooled 8/17, faithfulness 0.969, relevancy 0.609), híbrido (0.150, 9/17, 0.967, 0.628), expandido (0.400, **17/17**, 0.975, 0.656). Leer en `rag_baseline/ragas/results_ragas.md` (tabla por pregunta y análisis de acuerdo/desacuerdo con la exactitud). `make ragas-metrics` depende de las tres corridas RAG (sus traces `retrieval*.json` / `run_trace*.jsonl`) y escribe `rag_baseline/ragas/metrics_ragas.json`. **Método honesto:** la librería `ragas` 0.4.4 con el juez local Qwen2.5-1.5B en CPU no completó ni una métrica en el smoke test (timeout de 180 s por job; log en `rag_baseline/ragas/smoke_test.log`), así que las cuatro métricas se calculan determinísticamente con las definiciones estándar de RAGAS desde los traces y el ground truth auditable en `rag_baseline/ragas/ground_truth_evidence.json`. No son un run juzgado por GPT-4: la precision es un límite inferior (definición estricta por página) y la faithfulness determinista es un límite superior (no detecta la mala atribución). El proxy de relevancy es coseno MiniLM, no la relevancy real de RAGAS (preguntas generadas por LLM), y es la métrica menos fiable del set.
+
 ### MEMO run 1: 0/12
 
 ```bash
@@ -202,6 +228,7 @@ make rag-expand           # RAG expansión: traducción + keywords de dominio (<
 make rag-retrieve-expanded  # RAG expansión: retrieval híbrido con queries expandidas (~1 min)
 make rag-answer-expanded    # RAG expansión: reader con el top-5 expandido (~26 min)
 make rag-score-expanded     # RAG expansión: escribe rag_baseline/results_expanded.md (5/12)
+make ragas-metrics          # RAGAS determinista de las 3 variantes RAG (~2 s + ~36 s; escribe rag_baseline/ragas/metrics_ragas.json)
 ```
 
 Ver `make help` para la lista completa.
