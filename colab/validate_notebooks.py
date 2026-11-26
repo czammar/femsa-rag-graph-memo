@@ -6,6 +6,10 @@
   y %%bash, que no son Python).
 - Existencia de los archivos del repo que los notebooks referencian.
 - Presencia del bloque Ollama (instalar/arrancar/pull) en 00, 04, 05, 06, 07, 08.
+- Base autocontenida en todos (GPU check + Drive + repo), celda de datos
+  (Drive -> subir -> generar) en 01-08, celda final de guardado en Drive
+  en todos, y checks de prerrequisitos de etapa (adaptador en 04, trazas
+  y retrievals de 05/06 en 08).
 - Ausencia de pasos de maquina local (la guia OLLAMA.md local no es el camino).
 """
 import ast
@@ -61,6 +65,28 @@ for nb_path in NOTEBOOKS:
                         "03_memo_entrenamiento.ipynb"):
         check("ollama serve" not in code_text,
               f"{nb_path.name}: no deberia arrancar Ollama (no lo usa)")
+    # 2b. Base autocontenida en todos: GPU check + Drive + repo
+    all_text = md_text + "\n" + code_text
+    check("nvidia-smi" in all_text,
+          f"{nb_path.name}: falta el check de GPU (nvidia-smi)")
+    check("drive.mount" in code_text,
+          f"{nb_path.name}: falta el montaje de Drive")
+    check("femsa-rag-graph-memo" in all_text,
+          f"{nb_path.name}: falta el clone/pull del repo")
+    # 2c. Celda de datos (Drive -> subir -> generar) en 01-08
+    if nb_path.name != "00_ollama_setup.ipynb":
+        check("files.upload" in code_text and "chunks.jsonl" in code_text,
+              f"{nb_path.name}: falta la celda de datos (Drive -> subir -> generar)")
+    # 2d. Celda final de guardado en Drive en todos
+    check("GUARDADO EN DRIVE" in code_text,
+          f"{nb_path.name}: falta la celda final de guardado en Drive")
+    # 2e. Prerrequisitos de etapa
+    if nb_path.name == "04_memo_evaluacion.ipynb":
+        check("FALTA el adaptador MEMORY" in code_text,
+              "04: falta el check del adaptador del notebook 03")
+    if nb_path.name == "08_ragas.ipynb":
+        check("FALTAN insumos de 05/06" in code_text,
+              "08: falta el check de trazas/retrievals de 05/06")
     # 3. Sin pasos de maquina local
     check("OLLAMA.md" not in md_text and "OLLAMA.md" not in code_text,
           f"{nb_path.name}: referencia la guia local OLLAMA.md (fuera de alcance)")
@@ -77,7 +103,7 @@ for nb_path in NOTEBOOKS:
 # datos que deben pre-existir; las salidas que generan los notebooks — trazas,
 # resultados, v3, adaptador, eval expandido — no existen aun por definicion).
 OUTPUT_PATTERNS = ("_colab", "reflection_qa_v3", "eval_questions_expanded",
-                   "memory_model_colab")
+                   "memory_model_colab", "ollama-manifest", "retrieval_hybrid_k10")
 referenced = set()
 for nb_path in NOTEBOOKS:
     nb = nbf.read(nb_path, as_version=4)

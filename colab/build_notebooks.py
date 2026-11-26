@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Genera los notebooks de Google Colab del experimento FEMSA 2024.
 
-Uso:  python3 build_notebooks.py   (escribe colab/*.ipynb + colab/README.md)
+Uso:  python3 build_notebooks.py   (escribe colab/*.ipynb).
+El README.md de colab/ se mantiene a mano (no lo genera este script).
 
 Cada notebook es autocontenido: monta Drive, clona/actualiza el repo,
 instala sus dependencias y (donde hace falta) instala/arranca Ollama con
@@ -10,6 +11,13 @@ codigo del repo (pipeline/, memo/, rag_baseline/, agentic_rag/): los
 scripts se corren como subprocesos o se importan, salvo el entrenamiento
 MEMO y la inferencia, que van adaptados a GPU en el propio notebook
 (los scripts originales cargan el modelo en CPU sin device_map).
+
+Datos procesados: cada notebook que consume chunks.jsonl lleva su celda
+de datos (Drive -> subir con el widget de Colab -> generar con extract.py
+como ultimo recurso). Los insumos que produce una etapa anterior (adaptador
+LoRA del 03, trazas del 05/06) se verifican con una celda de prerrequisitos
+que falla con un mensaje claro si faltan. Cada notebook termina con una
+celda de guardado en Drive (verifica y lista lo producido).
 
 No se ejecuta nada en Colab aqui: este script solo genera los .ipynb.
 """
@@ -190,6 +198,159 @@ def ollama_compact_cells(models, model_var="OLLAMA_MODEL"):
     ]
 
 # ---------------------------------------------------------------------------
+# Celdas de datos: primero en Drive, si no, subir; generar es último recurso
+# ---------------------------------------------------------------------------
+
+_DATA_MD = (
+    "## Datos procesados: primero en Drive, si no, súbelos\n\n"
+    "Este notebook necesita `pipeline/data/chunks.jsonl` (las 151 páginas del informe "
+    "extraídas). El flujo es:\n\n"
+    "1. **Buscarlo en Drive** (ruta estándar, bajo el repo clonado).\n"
+    "2. **Si no está, subirlo** con el widget de Colab de la celda siguiente: el archivo "
+    "es `chunks.jsonl`. Lo consigues de una corrida anterior en Drive o generándolo del "
+    "repo con `make extract` (`python pipeline/extract.py`).\n"
+    "3. **Solo si no lo subes**, generarlo aquí corriendo `extract.py` (descarga el PDF "
+    "~19 MB y extrae las 151 páginas, ~1–2 min). Es el último recurso, no el camino "
+    "principal.\n\n"
+    "`triples_seed.json` y `eval_questions.json` vienen con el clon del repo: no hace "
+    "falta subirlos."
+)
+
+_DATA_CODE = r"""
+import json, subprocess, sys
+from pathlib import Path
+
+CHUNKS = REPO + "/pipeline/data/chunks.jsonl"
+DATA_DIR = REPO + "/pipeline/data"
+
+
+def _chunks_ok(path):
+    try:
+        with open(path) as f:
+            first = f.readline()
+            n = 1 + sum(1 for _ in f)
+        row = json.loads(first)
+        return n >= 100 and isinstance(row.get("text"), str) and len(row["text"]) > 0
+    except Exception:
+        return False
+
+
+if _chunks_ok(CHUNKS):
+    print(f"datos procesados OK en Drive: {CHUNKS}")
+else:
+    print("chunks.jsonl NO está en Drive.")
+    print("Súbelo con el widget de abajo (botón 'Elegir archivos').")
+    print("Qué subir: chunks.jsonl — las 151 páginas del informe FEMSA 2024.")
+    print("Dónde conseguirlo: de una corrida anterior en Drive, o del repo con `make extract`.")
+    print("Si no lo subes, el notebook lo genera con extract.py (último recurso).")
+    from google.colab import files
+    uploaded = files.upload()
+    for name, data in uploaded.items():
+        dest = Path(DATA_DIR) / Path(name).name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+        print(f"subido: {dest} ({len(data)} bytes)")
+    if not _chunks_ok(CHUNKS) and len(uploaded) == 1:
+        # El archivo subido puede venir con otro nombre: probar como chunks.jsonl.
+        only = next(iter(uploaded.values()))
+        Path(CHUNKS).write_bytes(only)
+        print("probando el archivo subido como chunks.jsonl...")
+    if _chunks_ok(CHUNKS):
+        print("datos listos por subida.")
+    else:
+        print("Sin subida válida: último recurso, generar con extract.py...")
+        print("(descarga el PDF ~19 MB y extrae las 151 páginas, ~1-2 min)")
+        try:
+            import pypdf
+        except ImportError:
+            subprocess.run([sys.executable, "-m", "pip", "install", "-q",
+                            "pypdf>=7.1.1"], check=True)
+        r = subprocess.run([sys.executable, "extract.py"], cwd=REPO + "/pipeline")
+        print("extract.py exit:", r.returncode)
+        assert _chunks_ok(CHUNKS), "No se pudo obtener chunks.jsonl."
+    print(f"chunks.jsonl listo: {CHUNKS}")
+"""
+
+
+def data_ensure_cells():
+    """Datos procesados, en orden: Drive -> subir con widget -> generar (último recurso).
+    La lleva cada notebook que consume chunks.jsonl (01-08)."""
+    return [md(_DATA_MD), code(_DATA_CODE)]
+
+
+# ---------------------------------------------------------------------------
+# Celda final: guardar en Drive (verificar + listar lo producido)
+# ---------------------------------------------------------------------------
+
+_SAVE_CODE_TEMPLATE = r"""
+import os, shutil, time
+
+
+def _human(n):
+    for u in ["B", "KB", "MB", "GB"]:
+        if n < 1024:
+            return f"{n:.0f} {u}"
+        n /= 1024
+    return f"{n:.1f} GB"
+
+
+def _list_dir(path):
+    total, nfiles = 0, 0
+    for root, _dirs, files in os.walk(path):
+        for fn in sorted(files):
+            p = os.path.join(root, fn)
+            sz = os.path.getsize(p)
+            total += sz
+            nfiles += 1
+            print(f"    {os.path.relpath(p, REPO)} ({_human(sz)})")
+    return nfiles, total
+
+
+# Logs de la sesion (viven en /content, fuera de Drive): copiarlos al repo.
+for _log in ["ollama.log", "ollama_error.log", "relate.log"]:
+    if os.path.isfile(_log):
+        shutil.copy(_log, os.path.join(REPO, _log))
+        print(f"log copiado a Drive: {_log}")
+
+ENTRIES = %ENTRIES%
+total_bytes, missing = 0, []
+for rel, label, required in ENTRIES:
+    p = os.path.join(REPO, rel)
+    if os.path.isdir(p):
+        nf, tb = _list_dir(p)
+        total_bytes += tb
+        print(f"{label}: directorio, {nf} archivos, {_human(tb)}")
+    elif os.path.isfile(p):
+        sz = os.path.getsize(p)
+        total_bytes += sz
+        mt = time.strftime("%Y-%m-%d %H:%M", time.localtime(os.path.getmtime(p)))
+        print(f"{label}: {rel} ({_human(sz)}, {mt})")
+    else:
+        status = "FALTA (obligatorio)" if required else "pendiente (opcional)"
+        print(f"{label}: {status}: {rel}")
+        if required:
+            missing.append(rel)
+print(f"\nGUARDADO EN DRIVE: {_human(total_bytes)} verificados bajo {REPO}")
+if missing:
+    print("OJO, faltan obligatorios:", missing)
+"""
+
+
+def save_cell(entries, note=""):
+    """Celda final de cada notebook: verifica y lista en Drive lo producido.
+    entries: lista de (ruta relativa a REPO, etiqueta, obligatorio).
+    Solo informa (imprime FALTA), nunca rompe el notebook."""
+    md_text = ("## Guardar en Drive (final)\n\n"
+               "Todo lo que produjo este notebook vive bajo el repo clonado en Drive "
+               "(`REPO`), así que sobrevive aunque la sesión de Colab se corte. Esta "
+               "celda lo verifica y lo lista: si algo falta, lo dice aquí, no después.")
+    if note:
+        md_text += "\n\n" + note
+    src = _SAVE_CODE_TEMPLATE.replace("%ENTRIES%", repr(entries))
+    return [md(md_text), code(src)]
+
+
+# ---------------------------------------------------------------------------
 # 00 — Ollama setup (versión canónica, completa)
 # ---------------------------------------------------------------------------
 
@@ -212,6 +373,9 @@ def build_00():
             "`install.sh` + `ollama serve` en background + pull de modelos) y verificación "
             "propia de que Colab no trae `zstd` y el instalador lo exige."),
         gpu_check_cell(),
+        drive_mount_cell(),
+        params_cell(),
+        repo_setup_cell(),
         md("## 1. Instalar Ollama\n\n"
            "Colab no trae `zstd` y el instalador de Ollama lo exige: primero `apt-get` "
            "con `zstd` (varias guías añaden también `pciutils` para detectar la GPU) y "
@@ -258,6 +422,20 @@ print("Ollama OK: servidor en localhost:11434, modelos 1.5b y 7b listos.")
            "- **Notebooks 04–08:** cada uno trae su propio bloque compacto de Ollama "
            "(instalar/arrancar/pull idempotentes), así que pueden correrse solos sin "
            "haber corrido este 00 primero — pero si ya lo corriste, no descargan nada de más."),
+        code(r"""
+import subprocess
+
+ver = subprocess.run(["ollama", "--version"], capture_output=True, text=True).stdout.strip()
+lst = subprocess.run(["ollama", "list"], capture_output=True, text=True).stdout
+manifest = f"ollama {ver}\n\nModelos bajados en esta sesion:\n{lst}"
+open(REPO + "/ollama-manifest.txt", "w").write(manifest)
+print(manifest)
+print("manifiesto ->", REPO + "/ollama-manifest.txt")
+"""),
+        *save_cell([("ollama-manifest.txt", "Manifiesto Ollama (modelos bajados)", True)],
+                   note="Los modelos en sí NO se copian a Drive (4.7–9 GB cada uno; bajar de "
+                        "nuevo por sesión es más rápido que servirlos desde Drive). Lo que "
+                        "queda guardado es este manifiesto con la versión y los tags bajados."),
     ]
     write_nb("00_ollama_setup.ipynb", cells, "00 Ollama setup")
 
@@ -307,17 +485,7 @@ except Exception as e:
     print("Ollama NO responde:", e)
     print("Corre 00_ollama_setup.ipynb, o sigue: los notebooks 04-08 levantan el servidor solos.")
 """),
-        md("## Descargar el PDF y extraer el texto\n\n"
-           "Corre `pipeline/extract.py` tal cual (mismo script del repo, sin cambios). "
-           "Intenta primero la edición en español y luego la de inglés: el sitio en español "
-           "está detrás de un WAF (Imperva/Incapsula) que bloquea descargas directas, así que "
-           "en la práctica usa la edición en inglés — mismo informe, mismas cifras. "
-           "Escribe `pipeline/data/chunks.jsonl` (151 páginas) y las 13 tripletas por reglas."),
-        code("""
-import subprocess, sys
-r = subprocess.run([sys.executable, "extract.py"], cwd=REPO + "/pipeline")
-print("exit:", r.returncode)
-"""),
+        *data_ensure_cells(),
         md("## Verificación: 151 páginas y la cifra clave"),
         code("""
 import json
@@ -328,6 +496,12 @@ hits = [c["page"] for c in chunks if "781,585" in c["text"]]
 print("781,585 aparece en paginas:", hits)
 print("ejemplo p.11:", chunks[10]["text"][:300].replace("\\n", " "))
 """),
+        *save_cell([
+            ("pipeline/data/chunks.jsonl", "chunks.jsonl (151 páginas extraídas)", True),
+            ("pipeline/data/FEMSA_2024_Annual_Report_EN.pdf", "PDF del informe (inglés)", False),
+            ("pipeline/extracted_triples.jsonl", "13 tripletas candidatas por reglas (pendientes de revisión)", False),
+        ], note="El PDF (~19 MB) y `chunks.jsonl` quedan en Drive: son los insumos que "
+                "los notebooks 02–08 pedirán primero (antes de subirlos o generarlos)."),
     ]
     write_nb("01_setup_y_extraccion.ipynb", cells, "01 setup y extracción")
 
@@ -344,9 +518,15 @@ def build_02():
             "carga el grafo y corre las 12 preguntas en Cypher. Todo dentro de Colab: "
             "nada de pasos de máquina local.\n\n"
             "**Prerrequisito:** notebook 01 (chunks + tripletas semilla)."),
+        gpu_check_cell(),
         drive_mount_cell(),
         params_cell(),
         repo_setup_cell(),
+        md("## Dependencia: driver neo4j\n\n"
+           "`pipeline/load_relate.py` importa `neo4j` (lazy import): sin el paquete, la "
+           "carga por Bolt falla. Se instala aquí, antes de cargar el grafo."),
+        pip_cell(["neo4j>=6.4.1"]),
+        *data_ensure_cells(),
         md("## Generar el Cypher de carga\n\n"
            "Corre `pipeline/build_cypher.py` tal cual: genera `load_graph.cypher` "
            "(MERGE idempotentes) desde `triples_seed.json`. No se cargan tripletas "
@@ -470,6 +650,14 @@ print(f"\\n{n} consultas ejecutadas (esperado: 12)")
            "relate -d ./pipeline/data/femsa.rl query < pipeline/load_graph.cypher\n"
            "```\n\n"
            "desde el directorio del repo."),
+        *save_cell([
+            ("pipeline/data/femsa.rl", "Store Relate (27 nodos, 39 relaciones)", True),
+            ("pipeline/load_graph.cypher", "Cypher de carga generado (MERGE idempotentes)", True),
+            ("pipeline/schema.cypher", "Esquema (constraints)", False),
+            ("relate.log", "Log del servidor Relate", False),
+        ], note="El store `femsa.rl` queda en Drive: el notebook 04 (MEMO) no lo necesita, "
+                "pero cualquier corrida futura del grafo lo reusa sin recargar. Si la sesión "
+                "se corta, basta re-correr las celdas de arranque del servidor."),
     ]
     write_nb("02_grafo_relate.ipynb", cells, "02 grafo Relate")
 
@@ -683,6 +871,7 @@ INIT_ADAPTER = None  # para reanudar: ruta de un adaptador de una epoca anterior
 TIME_TEST_STEPS = 5  # 0 = entrenamiento completo; >0 = solo mide s/paso y para
 """),
         repo_setup_cell(),
+        *data_ensure_cells(),
         pip_cell([
             '"torch>=2.15.0"', "transformers==5.24.1", "accelerate>=1.16.0",
             "peft>=0.22.0", "numpy>=2.5.5",
@@ -840,6 +1029,16 @@ print(f"-> {OUT}")
            "desde ahí (misma aproximación que el run 2 en CPU).\n"
            "- El adaptador que evalúa el notebook 04 es `OUT_DIR` (por defecto "
            "`memo/memory_model_colab`)."),
+        *save_cell([
+            ("memo/memory_model_colab", "Adaptador LoRA final (MEMORY 1.5B, 3 épocas)", True),
+            ("memo/memory_model_colab_ckpt", "Checkpoints cada 25 pasos (para reanudar)", False),
+            ("memo/reflection_qa_v3.jsonl", "Dataset v3 (1,500–2,000 pares)", True),
+            ("memo/reflection_qa_v2.jsonl", "Dataset v2 (1,414 pares)", False),
+            ("memo/reflection_qa.jsonl", "Dataset v1 (446 pares)", False),
+        ], note="El adaptador final + sus checkpoints y los 3 datasets quedan en Drive. "
+                "El notebook 04 verifica que exista el adaptador antes de evaluar; si la "
+                "sesión se cortó a mitad, reanuda con `INIT_ADAPTER` apuntando al último "
+                "checkpoint y vuelve a guardar aquí."),
     ]
     write_nb("03_memo_entrenamiento.ipynb", cells, "03 MEMO entrenamiento GPU")
 
@@ -876,11 +1075,24 @@ TRACE_OUT = REPO + "/memo/run_trace_colab.jsonl"
 TRACE_CONTROL_OUT = REPO + "/memo/run_trace_colab_control.jsonl"
 """),
         repo_setup_cell(),
+        *data_ensure_cells(),
         pip_cell([
             '"torch>=2.15.0"', "transformers==5.24.1", "accelerate>=1.16.0",
             "peft>=0.22.0", "numpy>=2.5.5", "langchain-ollama",
         ]),
         *ollama_compact_cells(["qwen2.5:1.5b", "qwen2.5:7b"], "EXEC_OLLAMA_MODEL"),
+        md("## Prerrequisito: el adaptador MEMORY del notebook 03\n\n"
+           "Sin el adaptador entrenado no hay nada que evaluar. Esta celda falla con un "
+           "mensaje claro si no existe: corre el notebook 03 primero."),
+        code("""
+import os
+assert os.path.isdir(ADAPTER), (
+    "FALTA el adaptador MEMORY: " + ADAPTER + "\\n"
+    "Lo produce el notebook 03 (MEMO entrenamiento). Corre 03 primero; "
+    "sin adaptador entrenado, la evaluación no tiene sentido."
+)
+print("adaptador MEMORY OK:", ADAPTER)
+"""),
         md("## 1. Cargar MEMORY (HF, GPU) y EXECUTIVE (Ollama)\n\n"
            "MEMORY = base 1.5B + adaptador LoRA del notebook 03 (o la base sola si "
            "`RUN_CONTROL`). EXECUTIVE = ChatOllama contra el servidor local. Se "
@@ -1121,6 +1333,13 @@ else:
         print(f"  X: {c['question']} -> {c['expected']}")
     print(f"-> {EXPANDED_EVAL} (needs_review=true: revisa antes de usar)")
 """),
+        *save_cell([
+            ("memo/run_trace_colab.jsonl", "Traza MEMO Colab (12 preguntas)", True),
+            ("memo/run_trace_colab_control.jsonl", "Traza control (base sin entrenar)", False),
+            ("memo/results_colab.md", "Resultados MEMO Colab", True),
+            ("memo/results_colab_control.md", "Resultados control", False),
+            ("memo/eval_questions_expanded.json", "Set de evaluación ampliado (si se generó; needs_review=true)", False),
+        ]),
     ]
     write_nb("04_memo_evaluacion.ipynb", cells, "04 MEMO evaluación (Ollama)")
 
@@ -1182,6 +1401,7 @@ RETRIEVAL_FILE = REPO + "/rag_baseline/retrieval.json"
 TRACE_OUT = REPO + "/rag_baseline/run_trace_colab.jsonl"
 """),
         repo_setup_cell(),
+        *data_ensure_cells(),
         pip_cell([
             '"torch>=2.15.0"', "transformers==5.24.1", "sentence-transformers==6.3.0",
             "numpy>=2.5.5", "langchain-ollama",
@@ -1225,6 +1445,12 @@ print("exit:", r.returncode)
            "```\n\n"
            "Ojo: `answer.py` carga el modelo sin `device_map`, así que en Colab correría "
            "en CPU salvo que se adapte. Por eso el default en Colab es Ollama."),
+        *save_cell([
+            ("rag_baseline/retrieval.json", "Retrieval denso top-5 (12 preguntas)", True),
+            ("rag_baseline/run_trace_colab.jsonl", "Traza del lector (12 respuestas)", True),
+            ("rag_baseline/results_colab.md", "Resultados RAG Colab", True),
+        ], note="El notebook 08 (RAGAS) verifica que existan estas trazas antes de medir: "
+                "sin ellas no hay métricas."),
     ]
     write_nb("05_rag_baseline.ipynb", cells, "05 RAG baseline (Ollama)")
 
@@ -1251,6 +1477,7 @@ READER_OLLAMA_MODEL = "qwen2.5:1.5b"   # lector: 1.5b (paridad CPU) o qwen2.5:7b
 K = 5
 """),
         repo_setup_cell(),
+        *data_ensure_cells(),
         pip_cell([
             '"torch>=2.15.0"', "transformers==5.24.1", "sentence-transformers==6.3.0",
             "numpy>=2.5.5", "rank-bm25==0.2.2", "langchain-ollama",
@@ -1349,77 +1576,182 @@ for name, path in [("denso (NB05)", REPO + "/rag_baseline/results_colab.md"),
     except FileNotFoundError:
         print(f"{name:22s} (sin resultados: corre el NB05 para el denso)")
 """),
+        *save_cell([
+            ("rag_baseline/retrieval_hybrid.json", "Retrieval híbrido (12 preguntas)", True),
+            ("rag_baseline/retrieval_expanded.json", "Retrieval híbrido + expansión", True),
+            ("rag_baseline/run_trace_hybrid_colab.jsonl", "Traza híbrido", True),
+            ("rag_baseline/run_trace_expanded_colab.jsonl", "Traza híbrido + expansión", True),
+            ("rag_baseline/results_hybrid_colab.md", "Resultados híbrido", True),
+            ("rag_baseline/results_expanded_colab.md", "Resultados híbrido + expansión", True),
+            ("rag_baseline/expanded_queries.json", "Queries expandidas", False),
+        ], note="El notebook 07 (juez) y el 08 (RAGAS) verifican que existan estos "
+                "retrievales y trazas antes de correr: sin ellos no hay nada que juzgar "
+                "ni medir."),
     ]
     write_nb("06_rag_hibrido_y_expansion.ipynb", cells, "06 RAG híbrido y expansión")
 
 # ---------------------------------------------------------------------------
-# 07 — RAG agéntico (LLM vía Ollama)
+# ---------------------------------------------------------------------------
+# 07 — RAG agéntico JUEZ (selección de chunks con juez, vía Ollama)
 # ---------------------------------------------------------------------------
 
 def build_07():
     cells = [
         title_cell(
-            "07 — RAG agéntico (LangChain + LangGraph, LLM vía Ollama)",
-            "El mismo agente del repo (`agentic_rag/agent.py`: grafo LangGraph "
-            "plan → act → observe → answer, 3 herramientas, ReAct textual, máx. 3 pasos) "
-            "pero con el LLM vía **ChatOllama** contra el servidor local. El repo ya trae "
-            "ese backend (`agentic_rag/llm_backends.py`, `configure_llm(\"ollama\", ...)`): "
-            "mismo grafo, mismas herramientas, mismos prompts, mismo scorer; solo cambia "
-            "el cerebro.\n\n"
-            "**Modelo por defecto: `qwen2.5:7b`** — el agente es justo el sistema que "
-            "necesita el modelo más grande: con el 1.5B sacó 2/12 en CPU y nunca usó "
-            "`vector_search` ni `calculator` (24/24 llamadas fueron `graph_query`). "
-            "El parámetro `AGENT_OLLAMA_MODEL` permite bajar a `qwen2.5:1.5b` para la "
-            "comparación en paridad. En la T4 el 7B (Q4_K_M, ~4.7 GB) cabe cómodo.\n\n"
-            "**Prerrequisitos:** notebooks 01 (chunks) y 02 (grafo Relate cargado + "
-            "servidor arriba, o al menos el store `femsa.rl` y el binario `relate`)."),
+            "07 — RAG agéntico: el juez selecciona los chunks (vía Ollama)",
+            "Segundo diseño de RAG agéntico, el que pidió el usuario: el sistema SOLO "
+            "califica los chunks del RAG híbrido y selecciona los útiles con un juez. "
+            "Sin graph_query, sin calculator.\n\n"
+            "Por pregunta: (1) retrieval híbrido top-10 (BM25 Okapi + MiniLM, RRF k=60); "
+            "(2) UN llamado al juez con los 10 chunks numerados, que devuelve un "
+            "veredicto por chunk (UTIL / NO UTIL) con su razón corta — máximo 3 reintentos "
+            "si los veredictos no se pueden parsear; si a los 3 sigue sin veredictos "
+            "válidos, la pregunta se abstiene sin llamar al lector; (3) el lector "
+            "responde ÚNICAMENTE con los chunks seleccionados (mismo lector, mismo "
+            "condense, mismo prompt que `rag_baseline/answer.py`); si el juez no "
+            "selecciona nada, abstención honesta.\n\n"
+            "**Juez y lector vía ChatOllama** contra el servidor local "
+            "(`JUDGE_OLLAMA_MODEL`, default `qwen2.5:7b`; `qwen2.5:1.5b` para paridad con "
+            "el run en CPU). El código de referencia vive en el repo "
+            "(`agentic_rag/judge_rerank.py`: SYSTEM y parseo de veredictos; "
+            "`agentic_rag/run_judge.py`: pipeline completo en CPU; "
+            "`agentic_rag/score_judge.py`: scorer con diagnóstico del juez).\n\n"
+            "**El intento anterior queda como negativo documentado:** el agente ReAct "
+            "con LangChain + LangGraph y 3 herramientas sacó 2/12 en CPU y nunca usó "
+            "`vector_search` ni `calculator` (24/24 llamadas fueron `graph_query`): midió "
+            "un agente solo-grafo, no un RAG agéntico. Ese run no se toca "
+            "(`agentic_rag/results_agentic.md`).\n\n"
+            "**Prerrequisitos:** notebook 01 (chunks). El retrieval híbrido top-10 se "
+            "genera en este mismo notebook."),
         gpu_check_cell(),
         drive_mount_cell(),
         params_cell("""
 # --- Parametros ---
-AGENT_OLLAMA_MODEL = "qwen2.5:7b"   # agente: 7b (default, el que muestra lo agentico)
-                                     # o qwen2.5:1.5b para paridad con el run en CPU (2/12)
-TRACE_OUT = REPO + "/agentic_rag/run_trace_agentic_ollama_colab.jsonl"
+JUDGE_OLLAMA_MODEL = "qwen2.5:7b"   # juez y lector: 7b (default, el que muestra lo agentico)
+                                     # o qwen2.5:1.5b para paridad con el run en CPU
+K = 10
+RETRIEVAL_K10 = REPO + "/rag_baseline/retrieval_hybrid_k10.json"
+TRACE_OUT = REPO + "/agentic_rag/run_trace_judge_colab.jsonl"
 """),
         repo_setup_cell(),
+        *data_ensure_cells(),
         pip_cell([
             '"torch>=2.15.0"', "transformers==5.24.1", "sentence-transformers==6.3.0",
-            "numpy>=2.5.5", "rank-bm25==0.2.2", "neo4j>=6.4.1",
-            "langchain==1.5.2", "langgraph==1.2.24", "langchain-core==1.8.5",
-            "langchain-huggingface==1.3.0", "langchain-ollama",
+            "numpy>=2.5.5", "rank-bm25==0.2.2", "langchain-ollama",
         ]),
-        *ollama_compact_cells(["qwen2.5:7b", "qwen2.5:1.5b"], "AGENT_OLLAMA_MODEL"),
-        md("## Verificar Relate (grafo y binario)\n\n"
-           "La herramienta `graph_query` usa el CLI `relate` contra el store "
-           "`pipeline/data/femsa.rl`. Si el notebook 02 no se corrió en esta sesión, "
-           "el binario y el store pueden faltar: esta celda lo verifica y dice qué "
-           "correr. (El servidor no hace falta para `graph_query`: el CLI lee el store "
-           "directo; el servidor solo se necesita para `load_relate.py`.)"),
+        *ollama_compact_cells(["qwen2.5:7b", "qwen2.5:1.5b"], "JUDGE_OLLAMA_MODEL"),
+        md("## 1. Retrieval híbrido top-10\n\n"
+           "Corre `rag_baseline/retrieve_hybrid.py` con `--k 10`: BM25 Okapi + MiniLM, "
+           "fusión RRF k=60, top-10 por pregunta (el juez necesita más de donde elegir "
+           "que el top-5 fijo). Determinista: se puede regenerar sin cambiar el resultado."),
         code("""
-import os, subprocess
-
-RELATE_BIN = os.path.expanduser("~/.local/bin/relate")
-DB = REPO + "/pipeline/data/femsa.rl"
-print("binario relate:", RELATE_BIN, "->", os.path.exists(RELATE_BIN))
-print("store femsa.rl:", DB, "->", os.path.exists(DB))
-if not os.path.exists(RELATE_BIN):
-    print("Falta el binario: corre el notebook 02 (instala Relate en la instancia).")
-if not os.path.exists(DB):
-    print("Falta el store: corre el notebook 02 (carga el grafo).")
-assert os.path.exists(RELATE_BIN) and os.path.exists(DB), "Prerrequisitos del NB02 incompletos."
+import subprocess, sys
+r = subprocess.run([sys.executable, "retrieve_hybrid.py", "--k", str(K),
+                    "--out", RETRIEVAL_K10], cwd=REPO + "/rag_baseline")
+print("exit:", r.returncode)
 """),
-        md("## Correr el agente (Ollama 7B)\n\n"
-           "Importa el agente del repo y lo corre con el backend Ollama. Reanudable: "
-           "salta las preguntas cuyo id ya está en la traza (cada pregunta tarda "
-           "minutos; si la sesión se corta, re-corre la celda y sigue donde quedó). "
-           "La traza es nueva (`run_trace_agentic_ollama_colab.jsonl`) y nunca toca la "
-           "del 1.5B en CPU."),
+        md("## 2. Juez + lector (ChatOllama)\n\n"
+           "Un llamado al juez por pregunta con los 10 chunks numerados (misma versión "
+           "condensada que verá el lector, mismo SYSTEM y mismo parseo de veredictos "
+           "que `agentic_rag/judge_rerank.py`; máximo 3 reintentos; si no hay veredictos "
+           "válidos, abstención sin lector). El lector contesta solo con los chunks "
+           "seleccionados (mismo SYSTEM y `condense()` de `rag_baseline/answer.py`). "
+           "Reanudable: salta las preguntas cuyo id ya está en la traza "
+           "(`run_trace_judge_colab.jsonl`, nunca toca la traza del run en CPU)."),
         code("""
 import json, sys, time
 sys.path.insert(0, REPO + "/agentic_rag")
-from agent import build_graph, configure_llm, run_question
+sys.path.insert(0, REPO + "/rag_baseline")
+from judge_rerank import SYSTEM as JUDGE_SYSTEM, parse_verdicts
+from answer import SYSTEM as READER_SYSTEM, condense
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_ollama import ChatOllama
 
-configure_llm("ollama", model=AGENT_OLLAMA_MODEL, host="http://localhost:11434")
+ABSTAIN = "No lo sé."
+judge_llm = ChatOllama(model=JUDGE_OLLAMA_MODEL, base_url="http://localhost:11434",
+                       temperature=0, num_predict=200)
+reader_llm = ChatOllama(model=JUDGE_OLLAMA_MODEL, base_url="http://localhost:11434",
+                        temperature=0, num_predict=100)
+print("juez/lector (Ollama):", JUDGE_OLLAMA_MODEL)
+
+def judge_once(question, chunks):
+    # chunks: lista de (page, condensed_text). Un llamado, 10 veredictos.
+    parts = [f"[{i}] Página {p}\\n{c}" for i, (p, c) in enumerate(chunks, start=1)]
+    user = (f"Pregunta: {question}\\n\\nFragmentos del informe anual "
+            f"de FEMSA 2024:\\n\\n" + "\\n\\n".join(parts))
+    return judge_llm.invoke([SystemMessage(content=JUDGE_SYSTEM),
+                             HumanMessage(content=user)]).content.strip()
+
+def run_question(item):
+    t0 = time.time()
+    chunks = [(r["page"], condense(r["text"], item["question"]))
+              for r in item["retrieved"]]
+    presented = [{"n": i + 1, "page": p, "condensed": c}
+                 for i, (p, c) in enumerate(chunks)]
+    rec = {"id": item["id"], "level": item["level"], "question": item["question"],
+           "decomposition": "judge-rerank",
+           "reader_model": f"ollama {JUDGE_OLLAMA_MODEL}",
+           "retrieved_pages": [r["page"] for r in item["retrieved"]],
+           "retrieval_scores": [r["score"] for r in item["retrieved"]],
+           "chunks_presented": presented,
+           "judge": {"attempts": 0, "attempts_raw": [], "verdicts": None,
+                     "ok": False, "seconds": 0.0},
+           "selected_pages": [],
+           "reader": {"attempts": 0, "seconds": 0.0, "failed": False, "skipped": False},
+           "context": "", "final_answer": ABSTAIN, "seconds": 0.0}
+    # Juez: maximo 3 reintentos si no se pueden parsear los veredictos.
+    tj = time.time()
+    verdicts = None
+    for attempt in range(1, 4):
+        try:
+            raw = judge_once(item["question"], chunks)
+        except Exception as e:
+            raw = f"<ERROR: {type(e).__name__}: {e}>"
+        rec["judge"]["attempts_raw"].append(raw)
+        rec["judge"]["attempts"] = attempt
+        verdicts = parse_verdicts(raw, len(chunks))
+        if verdicts is not None:
+            break
+    rec["judge"]["seconds"] = round(time.time() - tj, 1)
+    if verdicts is None:
+        rec["judge"]["ok"] = False
+        rec["reader"]["skipped"] = True
+        rec["seconds"] = round(time.time() - t0, 1)
+        return rec
+    rec["judge"]["ok"] = True
+    rec["judge"]["verdicts"] = verdicts
+    selected = [i for i in range(1, len(chunks) + 1) if verdicts[i]["useful"]]
+    rec["selected_pages"] = [chunks[i - 1][0] for i in selected]
+    if not selected:
+        rec["reader"]["skipped"] = True
+        rec["seconds"] = round(time.time() - t0, 1)
+        return rec
+    ctx = "\\n\\n".join(f"[Página {chunks[i - 1][0]}]\\n{chunks[i - 1][1]}" for i in selected)
+    rec["context"] = ctx
+    # Lector: maximo 3 reintentos si el llamado falla o viene vacio.
+    tr = time.time()
+    answer, failed = None, False
+    user = (f"Fragmentos del informe anual de FEMSA 2024:\\n\\n{ctx}\\n\\n"
+            f"Pregunta: {item['question']}")
+    for attempt in range(1, 4):
+        try:
+            ans = reader_llm.invoke([SystemMessage(content=READER_SYSTEM),
+                                     HumanMessage(content=user)]).content.strip()
+        except Exception as e:
+            ans = ""
+            print(f"  {item['id']} lector intento {attempt} fallo: {type(e).__name__}: {e}", flush=True)
+        if ans:
+            answer = ans
+            rec["reader"]["attempts"] = attempt
+            break
+        rec["reader"]["attempts"] = attempt
+    else:
+        failed = True
+    rec["reader"]["seconds"] = round(time.time() - tr, 1)
+    rec["reader"]["failed"] = failed
+    rec["final_answer"] = ABSTAIN if failed else answer
+    rec["seconds"] = round(time.time() - t0, 1)
+    return rec
 
 done = set()
 try:
@@ -1433,55 +1765,51 @@ except FileNotFoundError:
 if done:
     print(f"reanudando: {sorted(done)} ya en {TRACE_OUT}")
 
-qs = json.load(open(REPO + "/memo/eval_questions.json"))["questions"]
-graph = build_graph()
+qs = json.load(open(RETRIEVAL_K10))["questions"]
 t0 = time.time()
 with open(TRACE_OUT, "a") as f:
-    for q in qs:
-        if q["id"] in done:
-            print(f"{q['id']} ya hecha, salto", flush=True)
+    for item in qs:
+        if item["id"] in done:
+            print(f"{item['id']} ya hecha, salto", flush=True)
             continue
-        print(f"{q['id']} L{q['level']}: {q['question']}", flush=True)
-        try:
-            rec = run_question(q["question"], q["id"], q["level"], graph)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            rec = {"id": q["id"], "level": q["level"], "question": q["question"],
-                   "llm_backend": f"ollama {AGENT_OLLAMA_MODEL}",
-                   "final_answer": f"ERROR del agente: {type(e).__name__}: {e}",
-                   "steps": [], "plan_raw_outputs": [],
-                   "seconds": round(time.time() - t0, 1)}
+        print(f"{item['id']} L{item['level']}: {item['question']}", flush=True)
+        rec = run_question(item)
         f.write(json.dumps(rec, ensure_ascii=False) + "\\n")
         f.flush()
-        tools = [s["tool"] for s in rec["steps"]]
-        print(f"{q['id']} -> {rec['final_answer'][:160]} "
-              f"(tools={tools}, {rec['seconds']}s)", flush=True)
+        print(f"{item['id']} juez_ok={rec['judge']['ok']} "
+              f"intentos_juez={rec['judge']['attempts']} "
+              f"seleccionados={len(rec['selected_pages'])}/10 "
+              f"lector_intentos={rec['reader']['attempts']} "
+              f"-> {rec['final_answer'][:160]}", flush=True)
 print(f"listo en {time.time() - t0:.1f}s -> {TRACE_OUT}")
 """),
-        md("## Puntuar con el mismo scorer\n\n"
-           "Corre `agentic_rag/score_agentic.py` tal cual, con la etiqueta del modelo. "
-           "En CPU (1.5B) el agente sacó 2/12 (Q4, Q8), 0 alucinaciones: la pregunta "
-           "es si el 7B usa las herramientas (vector_search, calculator) y sube el marcador."),
+        md("## 3. Puntuar con el mismo scorer (con diagnóstico del juez)\n\n"
+           "Corre `agentic_rag/score_judge.py` con `--blank-modes`: escribe "
+           "`results_agentic_judge_colab.md` con el puntaje, la comparación con los "
+           "demás sistemas y el diagnóstico del juez (precisión/recall de selección "
+           "contra las páginas de evidencia). Los modos de fallo quedan en PENDIENTE: "
+           "se verifican a mano contra el corpus y se llenan en VERIFIED_MODES de "
+           "`score_judge.py`, y se vuelve a correr sin `--blank-modes`."),
         code("""
 import subprocess, sys
-r = subprocess.run([sys.executable, "score_agentic.py", "--trace", TRACE_OUT,
-                    "--out", REPO + "/agentic_rag/results_agentic_ollama_colab.md",
-                    "--model-label", f"Ollama {AGENT_OLLAMA_MODEL} (Colab T4)",
-                    "--system-name", "RAG agentico Ollama (Colab)"],
+r = subprocess.run([sys.executable, "score_judge.py", "--trace", TRACE_OUT,
+                    "--out", REPO + "/agentic_rag/results_agentic_judge_colab.md",
+                    "--model-label", f"Ollama {JUDGE_OLLAMA_MODEL} (Colab T4)",
+                    "--system-name", "RAG agentico juez Ollama (Colab)",
+                    "--blank-modes"],
                    cwd=REPO + "/agentic_rag")
 print("exit:", r.returncode)
 """),
-        md("## Alternativa documentada (Hugging Face local, no por defecto en Colab)\n\n"
-           "El mismo agente con el backend local 1.5B en GPU (`configure_llm(\"local\", "
-           "model=\"memo/models/Qwen2.5-1.5B-Instruct\")`) corre, pero el backend local "
-           "carga el modelo sin `device_map`, así que en Colab caería en CPU. Por eso el "
-           "default en Colab es Ollama: el servidor ya gestiona la GPU. Si quieres el "
-           "7B por HF con cuantización 4-bit, añade `bitsandbytes` al pip install y "
-           "adapta `llm_backends.py` con `BitsAndBytesConfig(load_in_4bit=True)` — eso "
-           "queda como ejercicio documentado, no implementado aquí."),
+        *save_cell([
+            ("rag_baseline/retrieval_hybrid_k10.json", "Retrieval híbrido top-10 (12 preguntas)", True),
+            ("agentic_rag/run_trace_judge_colab.jsonl", "Traza juez + lector (12 preguntas)", True),
+            ("agentic_rag/results_agentic_judge_colab.md", "Resultados RAG agéntico juez", True),
+        ], note="El puntaje del juez es EL resultado agéntico que va al post (el ReAct "
+                "2/12 queda como negativo documentado). Sin esta traza, el draft no se "
+                "puede actualizar con el resultado real."),
     ]
-    write_nb("07_rag_agentico.ipynb", cells, "07 RAG agéntico (Ollama)")
+    write_nb("07_rag_agentico.ipynb", cells, "07 RAG agéntico juez (Ollama)")
+
 
 
 # ---------------------------------------------------------------------------
@@ -1511,12 +1839,77 @@ JUDGE_OLLAMA_MODEL = "qwen2.5:7b"   # juez: 7b (default, mejor juez) o qwen2.5:1
 TIME_BUDGET_MIN = 90   # tope de tiempo para el run real con ragas (muestras no hechas = skipped, no numeros)
 """),
         repo_setup_cell(),
+        *data_ensure_cells(),
         pip_cell([
             '"torch>=2.15.0"', "transformers==5.24.1", "sentence-transformers==6.3.0",
             "numpy>=2.5.5", "langchain-ollama", "langchain-huggingface==1.3.0",
             "ragas==0.4.4",
         ]),
         *ollama_compact_cells(["qwen2.5:7b", "qwen2.5:1.5b"], "JUDGE_OLLAMA_MODEL"),
+        md("## Prerrequisitos: trazas y retrievals de los notebooks 05 y 06\n\n"
+           "`compute_metrics.py` y `compute_relevancy.py` leen los nombres de CPU "
+           "(`retrieval.json`, `run_trace.jsonl`, ...), pero en Colab los notebooks 05 y 06 "
+           "escriben las trazas como `run_trace_colab.jsonl` (y variantes). Esta celda "
+           "verifica que existan los 6 insumos, te pide subirlos si faltan, y alinea los "
+           "nombres (copia `run_trace_*_colab.jsonl` -> `run_trace_*.jsonl`) para que "
+           "los scripts del repo los encuentren tal cual."),
+        code(r"""
+import json, shutil
+from pathlib import Path
+
+BASE = Path(REPO) / "rag_baseline"
+
+# (nombre Colab, nombre que espera compute_metrics.py, quién lo produce)
+NEEDED = [
+    ("retrieval.json", "retrieval.json", "NB05 (denso)"),
+    ("run_trace_colab.jsonl", "run_trace.jsonl", "NB05 (denso)"),
+    ("retrieval_hybrid.json", "retrieval_hybrid.json", "NB06 (híbrido)"),
+    ("run_trace_hybrid_colab.jsonl", "run_trace_hybrid.jsonl", "NB06 (híbrido)"),
+    ("retrieval_expanded.json", "retrieval_expanded.json", "NB06 (expansión)"),
+    ("run_trace_expanded_colab.jsonl", "run_trace_expanded.jsonl", "NB06 (expansión)"),
+]
+
+
+def _ok(p):
+    try:
+        return p.is_file() and p.stat().st_size > 0
+    except Exception:
+        return False
+
+
+missing = [c for c, _, _ in NEEDED if not _ok(BASE / c)]
+if missing:
+    print("Faltan insumos de 05/06:", missing)
+    print("Súbelos con el widget de abajo (botón 'Elegir archivos').")
+    print("Qué subir: los archivos de la lista (trazas run_trace_*_colab.jsonl y")
+    print("retrievales retrieval*.json) tal cual salieron de los notebooks 05 y 06.")
+    print("Dónde conseguirlos: de la corrida de 05/06 en Drive, o corriendo 05 y 06.")
+    from google.colab import files
+    uploaded = files.upload()
+    for name, data in uploaded.items():
+        dest = BASE / Path(name).name
+        dest.write_bytes(data)
+        print(f"subido: {dest} ({len(data)} bytes)")
+
+still = [(c, src) for c, _, src in NEEDED if not _ok(BASE / c)]
+assert not still, (
+    "FALTAN insumos de 05/06: " + ", ".join(c for c, _ in still) + "\n"
+    "Corre los notebooks 05 (denso) y 06 (híbrido + expansión) primero, "
+    "o sube sus archivos (retrieval*.json y run_trace_*_colab.jsonl) a rag_baseline/."
+)
+
+# Alinear nombres: los scripts del repo esperan los de CPU.
+for colab_name, cpu_name, _src in NEEDED:
+    if colab_name == cpu_name:
+        continue
+    src, dst = BASE / colab_name, BASE / cpu_name
+    if _ok(src) and (not _ok(dst) or src.stat().st_mtime > dst.stat().st_mtime):
+        shutil.copy(src, dst)
+        print(f"alineado: {colab_name} -> {cpu_name}")
+    elif _ok(dst):
+        print(f"ya existe {cpu_name} (se usa ese; {colab_name} no se copia)")
+print("prerrequisitos OK: trazas y retrievals de 05/06 listos.")
+"""),
         md("## 1. Métricas deterministas (siempre disponibles)\n\n"
            "Corre `compute_metrics.py` y `compute_relevancy.py` tal cual: precision y "
            "recall de contexto desde los traces de retrieval + ground truth auditable, "
@@ -1686,6 +2079,13 @@ for k, v in sorted(ok.items()):
         for m in ["context_precision", "context_recall", "faithfulness", "answer_relevancy"])
     print(f"{k}: {diffs}")
 """),
+        *save_cell([
+            ("rag_baseline/ragas/metrics_ragas.json", "Métricas RAGAS deterministas (actualizadas en Colab)", True),
+            ("rag_baseline/ragas/metrics_ragas_llm_colab.json", "Run real ragas con juez Ollama (36 muestras)", False),
+            ("rag_baseline/ragas/ground_truth_evidence.json", "Ground truth auditable", False),
+        ], note="Si el run real no completó muestras, `metrics_ragas_llm_colab.json` no "
+                "existe y la celda lo marca como pendiente: las deterministas siguen "
+                "siendo las cifras citables."),
     ]
     write_nb("08_ragas.ipynb", cells, "08 RAGAS (juez Ollama)")
 

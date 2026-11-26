@@ -2,9 +2,13 @@
 
 Repite el experimento completo (**RAG clásico vs grafo vs MEMO vs RAG agéntico**,
 informe anual FEMSA 2024) en **Google Colab con GPU T4**. Todo corre en Colab:
-nada de pasos de máquina local. Cada notebook es autocontenido (monta Drive,
+nada de pasos de máquina local. Cada notebook es autocontenido: monta Drive,
 clona el repo, instala sus dependencias y, donde hace falta, instala y arranca
-Ollama dentro de la propia instancia).
+Ollama dentro de la propia instancia. **Los datos procesados no se regeneran
+en cada notebook: cada uno los busca primero en Drive y, si no están, te pide
+subirlos** (el widget de Colab); generarlos es el último recurso. Y **cada
+notebook guarda sus modelos y outputs en Drive al final**, con una celda de
+verificación que lista lo guardado: nada se pierde si la sesión se corta.
 
 ## Orden de ejecución
 
@@ -17,8 +21,59 @@ Ollama dentro de la propia instancia).
 | 04 | `04_memo_evaluacion.ipynb` | Protocolo MEMO (ejecutivo vía Ollama) + control + scorer; genera set de eval ampliado (opcional) | sí, ejecutivo |
 | 05 | `05_rag_baseline.ipynb` | Retrieval denso + lector vía Ollama + scorer | sí, lector |
 | 06 | `06_rag_hibrido_y_expansion.ipynb` | BM25 híbrido (RRF k=60) + expansión de queries + lector vía Ollama + scorers | sí, lector |
-| 07 | `07_rag_agentico.ipynb` | Agente LangChain + LangGraph con LLM vía Ollama (default 7B) + scorer | sí, LLM del agente |
+| 07 | `07_rag_agentico.ipynb` | RAG agéntico JUEZ: retrieval híbrido top-10 + un llamado al juez por pregunta (califica los 10 chunks de golpe) + lector solo con los seleccionados; máx. 3 reintentos, abstención si no hay veredictos | sí, juez y lector |
 | 08 | `08_ragas.ipynb` | RAGAS deterministas + run real con la librería `ragas` y juez vía Ollama | sí, juez |
+
+## Datos procesados: primero en Drive, si no, súbelos
+
+Cada notebook que consume `pipeline/data/chunks.jsonl` (las 151 páginas del
+informe extraídas) lleva las mismas celdas de datos, en este orden:
+
+1. **Buscar en Drive** (ruta estándar, bajo el repo clonado en
+   `/content/drive/MyDrive/femsa-rag/femsa-rag-graph-memo`).
+2. **Si no está, subirlo** con el widget de Colab (`files.upload()`): el
+   archivo es `chunks.jsonl`. Lo consigues de una corrida anterior en Drive
+   o generándolo del repo con `make extract` (`python pipeline/extract.py`).
+   La celda te dice qué subir y dónde conseguirlo.
+3. **Solo si no lo subes, generarlo** corriendo `extract.py` (descarga el PDF
+   ~19 MB y extrae las 151 páginas, ~1–2 min). Es el último recurso, no el
+   camino principal.
+
+`triples_seed.json` y `eval_questions.json` vienen con el clon del repo: no
+hace falta subirlos.
+
+Los insumos que produce una etapa anterior **no** se regeneran ni se suben
+por defecto: se verifican con una celda de prerrequisitos que falla con un
+mensaje claro si faltan, diciendo qué notebook los produce:
+
+- **NB04** verifica que exista el adaptador MEMORY del NB03
+  (`memo/memory_model_colab`): sin adaptador entrenado, no hay nada que evaluar.
+- **NB08** verifica las 3 trazas y los 3 retrievals de los NB05/06
+  (`run_trace_colab.jsonl`, `run_trace_hybrid_colab.jsonl`,
+  `run_trace_expanded_colab.jsonl`, `retrieval.json`,
+  `retrieval_hybrid.json`, `retrieval_expanded.json`): si faltan, te pide
+  subirlos; si existen los de Colab, los **alinea** copiándolos a los nombres
+  de CPU (`run_trace.jsonl`, ...) que esperan `compute_metrics.py` y
+  `compute_relevancy.py`. Sin trazas no hay métricas.
+
+## Qué guarda cada notebook en Drive
+
+Cada notebook termina con una celda de guardado + verificación: lista lo
+producido (ruta, tamaño, fecha) y avisa si falta algo obligatorio. Todo vive
+bajo el repo clonado en Drive, así que sobrevive aunque la sesión se corte.
+Los logs de la sesión (`ollama.log`, `relate.log`) también se copian al repo.
+
+| # | Lo que guarda en Drive |
+|---|---|
+| 00 | `ollama-manifest.txt` (versión de Ollama + tags bajados). Los modelos **no** se copian a Drive (4.7–9 GB cada uno; bajar de nuevo por sesión es más rápido que servirlos desde Drive) |
+| 01 | `pipeline/data/chunks.jsonl` (151 páginas), `pipeline/data/FEMSA_2024_Annual_Report_EN.pdf`, `pipeline/extracted_triples.jsonl` (13 candidatas por reglas, pendientes de revisión) |
+| 02 | `pipeline/data/femsa.rl` (store Relate: 27 nodos, 39 relaciones), `pipeline/load_graph.cypher`, `pipeline/schema.cypher`, `relate.log` |
+| 03 | `memo/memory_model_colab` (adaptador LoRA final, MEMORY 1.5B), `memo/memory_model_colab_ckpt` (checkpoints cada 25 pasos), `memo/reflection_qa_v3.jsonl` (dataset v3) + v2 y v1 |
+| 04 | `memo/run_trace_colab.jsonl`, `memo/run_trace_colab_control.jsonl`, `memo/results_colab.md`, `memo/results_colab_control.md`, `memo/eval_questions_expanded.json` (si se generó; `needs_review: true`) |
+| 05 | `rag_baseline/retrieval.json` (denso top-5), `rag_baseline/run_trace_colab.jsonl`, `rag_baseline/results_colab.md` |
+| 06 | `rag_baseline/retrieval_hybrid.json`, `retrieval_expanded.json`, `run_trace_hybrid_colab.jsonl`, `run_trace_expanded_colab.jsonl`, `results_hybrid_colab.md`, `results_expanded_colab.md`, `expanded_queries.json` |
+| 07 | `rag_baseline/retrieval_hybrid_k10.json` (top-10), `agentic_rag/run_trace_judge_colab.jsonl`, `agentic_rag/results_agentic_judge_colab.md` |
+| 08 | `rag_baseline/ragas/metrics_ragas.json` (deterministas, actualizadas en Colab), `rag_baseline/ragas/metrics_ragas_llm_colab.json` (run real con juez Ollama, solo si completa), `ground_truth_evidence.json` |
 
 ## Antes de empezar
 
@@ -28,7 +83,10 @@ Ollama dentro de la propia instancia).
    celda de parámetros de cada notebook). Ahí quedan: el repo clonado, los
    chunks, las trazas, los resultados y los adaptadores LoRA.
 3. **Corre los notebooks en orden** (o solo el que necesites: cada uno es
-   autocontenido, pero los prerrequisitos están escritos arriba de cada uno).
+   autocontenido, pero los prerrequisitos de etapa están escritos arriba de
+   cada uno y se verifican con una celda que falla con un mensaje claro si
+   faltan: NB04 necesita el adaptador del NB03, NB08 necesita las trazas y
+   retrievals de los NB05/06).
 
 ## Persistencia: qué sobrevive a un reinicio de sesión y qué no
 
@@ -48,13 +106,13 @@ veces (o después del 00) no rompe nada ni descarga de más.
 
 ## Diseño Ollama: por qué los modelos intermedios van por Ollama
 
-Los modelos intermedios —lector RAG, ejecutivo MEMO, juez RAGAS, LLM del
-agente— corren vía **Ollama instalado en la propia instancia de Colab**:
+Los modelos intermedios —lector RAG, ejecutivo MEMO, juez RAGAS, juez y lector
+del RAG agéntico— corren vía **Ollama instalado en la propia instancia de Colab**:
 
 - **Un solo servidor** para todos los notebooks (puerto 11434, localhost).
 - **Cambio de modelo con un parámetro** en la parte superior de cada notebook
   (`qwen2.5:1.5b` para paridad con los runs originales en CPU, `qwen2.5:7b`
-  para el run con modelo más grande; el agente usa 7B por defecto).
+  para el run con modelo más grande; el juez del notebook 07 usa 7B por defecto).
 - **Sin cargar pesos en cada notebook**: el modelo se baja una vez por sesión
   y todos los notebooks lo reutilizan.
 
@@ -90,12 +148,27 @@ de `TIME_TEST` / piloto antes de la corrida completa):
 | Entreno MEMO 1.5B, 3 épocas (NB03) | ~10–20 min (medir con `TIME_TEST_STEPS`) |
 | Eval MEMO 12 preguntas (NB04) | ~5 min |
 | RAG denso / híbrido / expandido (NB05–06) | ~5–10 min cada uno |
-| Agente 7B, 12 preguntas (NB07) | ~10–20 min |
+| Juez + lector 7B, 12 preguntas (NB07) | ~10–20 min (12 llamados al juez + hasta 12 al lector) |
 | RAGAS real, 36 muestras (NB08) | acotado por `TIME_BUDGET_MIN` (default 90 min) |
 
 Colab gratuito desconecta tras ~90 min de inactividad y 12 h como máximo:
 mantén la pestaña abierta en las corridas largas. Los checkpoints (NB03) y
 las trazas reanudables (NB07) permiten seguir donde se cortó.
+
+## El RAG agéntico es el juez (NB07), no el agente ReAct
+
+El notebook 07 implementa el **segundo diseño** de RAG agéntico, el que pidió
+el usuario: el sistema solo califica los chunks del RAG híbrido y selecciona
+los útiles con un juez. Sin `graph_query`, sin `calculator`. El primer diseño
+—el agente ReAct con LangChain + LangGraph y 3 herramientas— sacó 2/12 en CPU
+y nunca usó `vector_search` ni `calculator` (24/24 llamadas fueron
+`graph_query`): midió un agente solo-grafo, no un RAG agéntico, y queda como
+negativo documentado (`agentic_rag/results_agentic.md`, no se toca). El código
+de referencia del juez vive en el repo: `agentic_rag/judge_rerank.py` (SYSTEM
+y parseo de veredictos), `agentic_rag/run_judge.py` (pipeline completo en CPU)
+y `agentic_rag/score_judge.py` (scorer con diagnóstico del juez: precisión y
+recall de selección contra las páginas de evidencia). El notebook 07 no corre
+nada en este sandbox: la evaluación del juez corre **solo en Colab**.
 
 ## Las dos mejoras que permite Colab
 
@@ -123,8 +196,11 @@ las trazas reanudables (NB07) permiten seguir donde se cortó.
 `build_notebooks.py` genera los 9 `.ipynb` (nbformat). `validate_notebooks.py`
 comprueba: JSON válido, `py_compile` de las celdas Python (saltando celdas
 `%pip` / `!` / `%%bash`), existencia de los archivos del repo referenciados,
-presencia del bloque Ollama en 00/04/05/06/07/08, y ausencia de pasos de
-máquina local.
+presencia del bloque Ollama en 00/04/05/06/07/08, base autocontenida en todos
+(GPU check + Drive + repo), celda de datos (Drive → subir → generar) en
+01–08, celda final de guardado en Drive en todos, checks de prerrequisitos
+de etapa (adaptador en 04, trazas/retrievals de 05/06 en 08), y ausencia de
+pasos de máquina local.
 
 ```bash
 python3 build_notebooks.py
@@ -159,9 +235,22 @@ que compilan (`py_compile` OK).
 - Todos los archivos del repo que los notebooks referencian existen.
 - El bloque Ollama (instalar si falta / arrancar si no responde / pull si
   falta el tag exacto) está en 00, 04, 05, 06, 07 y 08.
+- Cada notebook lleva la misma base (GPU check + Drive + repo), la celda de
+  datos (Drive → subir con `files.upload()` → generar con `extract.py` como
+  último recurso) en 01–08, y la celda final de guardado en Drive con
+  verificación en los 9. El NB02 además instala el driver `neo4j` (lo
+  necesita `load_relate.py`) y llevaba el GPU check que le faltaba.
+- Los prerrequisitos de etapa están verificados: el NB04 falla con mensaje
+  claro si falta el adaptador del NB03, y el NB08 verifica las 6 entradas de
+  05/06 (con opción de subirlas) y alinea los nombres de traza de Colab a los
+  de CPU que esperan `compute_metrics.py` / `compute_relevancy.py`.
 - La lógica de parseo de `queries.cypher` del NB02 se probó contra el archivo
   real: 12 bloques, Q9 y Q10 con sus dos cláusulas MATCH juntas (un bug
   anterior solo tomaba 3 consultas; corregido y verificado).
+- `agentic_rag/score_judge.py` compila y se probó (smoke test) con una traza
+  fabricada en `/tmp` —solo verifica la lógica del scorer, no son resultados—:
+  Q4 correcta con precisión de selección 1.00, Q1 incorrecta por fallo del
+  juez tras 3 intentos, con su abstención.
 - Ningún notebook depende de pasos de máquina local.
 
 **Sin probar (hay que verificar en la primera corrida en Colab):**
@@ -174,6 +263,8 @@ que compilan (`py_compile` OK).
 - Que `relate serve` en background sobreviva entre celdas de Colab.
 - El run real de `ragas` 0.4.4 con juez ChatOllama (si el piloto de una
   muestra completa, el resto es cuestión de tiempo).
+- La corrida del juez (NB07): un llamado al juez por pregunta con 10 chunks,
+  y si el 7B sigue los veredictos mejor que el 1.5B en CPU.
 - Los tiempos estimados de la tabla de arriba.
 
 Si algo de eso falla en la primera corrida, el fallo queda en el log de la

@@ -116,11 +116,50 @@ La traza Ollama (`run_trace_agentic_ollama.jsonl`) y su informe
 fallo se verifican a mano igual que en la corrida local (ver
 `OLLAMA.md` §8).
 
-Resultados: `run_trace_agentic.jsonl` (un JSON por pregunta: pasos,
+Resultados del ReAct: `run_trace_agentic.jsonl` (un JSON por pregunta: pasos,
 observaciones, `plan_raw_outputs`, segundos) y
 `results_agentic.md` (tabla por pregunta, por nivel, uso de
 herramientas, modos de fallo verificados a mano, comparación con los
 seis sistemas).
+
+## Segundo diseño: el juez selecciona los chunks (sin grafo, sin calculadora)
+
+El run ReAct (2/12) midió un agente solo-grafo: el 1.5B ignoró
+`vector_search` y `calculator` y fue directo al grafo. El diseño que
+pidió el usuario es distinto y más acotado: el sistema **solo califica
+los chunks del RAG híbrido y selecciona los útiles con un juez**.
+
+- **Pipeline** (`run_judge.py`): por pregunta, (1) retrieval híbrido
+  top-10 (BM25 Okapi + MiniLM, RRF k=60, `rag_baseline/retrieval_hybrid_k10.json`,
+  generado con `retrieve_hybrid.py --k 10`); (2) UN llamado al juez con los
+  10 chunks numerados (misma versión condensada que verá el lector), que
+  devuelve un veredicto por chunk (`N: UTIL: <razón>` / `N: NO UTIL: <razón>`,
+  `judge_rerank.py`); máximo **3 reintentos** si los veredictos no se pueden
+  parsear — si a los 3 sigue sin veredictos válidos, la pregunta se abstiene
+  sin llamar al lector; (3) el lector responde **únicamente** con los chunks
+  seleccionados (mismo lector, mismo condense, mismo prompt que
+  `rag_baseline/answer.py`; si el juez no selecciona nada, abstención honesta;
+  el llamado del lector también tiene máximo 3 reintentos).
+- **Scoring** (`score_judge.py`): mismo scorer que `memo/evaluate.py` +
+  diagnóstico del juez (precisión/recall de selección contra las páginas de
+  evidencia de `rag_baseline/ragas/ground_truth_evidence.json`); escribe
+  `results_agentic_judge.md` con `--blank-modes` para verificar los modos a mano.
+- **La evaluación del juez NO corre en este sandbox**: corre solo en el
+  notebook 07 de Colab (`colab/07_rag_agentico.ipynb`), donde juez y lector
+  van vía ChatOllama (default `qwen2.5:7b`, `qwen2.5:1.5b` para paridad).
+  `run_judge.py` es la referencia en CPU con el 1.5B local.
+
+```bash
+# Referencia CPU (NO correr en este sandbox: la evaluacion del juez es solo Colab)
+memo/.venv/bin/python agentic_rag/run_judge.py --time-test   # solo Q1, tiempos
+memo/.venv/bin/python agentic_rag/run_judge.py               # corrida completa
+memo/.venv/bin/python agentic_rag/score_judge.py --blank-modes
+```
+
+Resultados: `run_trace_judge.jsonl` (un JSON por pregunta: chunks presentados,
+veredictos por chunk, reintentos, respuesta final) y `results_agentic_judge.md`
+— **ninguno se sube al repo** (trazas regenerables; el informe se genera tras
+la corrida en Colab).
 
 ## Tiempos medidos en CPU (VM: 4 CPUs, ~8 GB RAM)
 
@@ -157,6 +196,9 @@ seis sistemas).
 | `OLLAMA.md` | Guía: mismo agente con un modelo 7B/14B en tu máquina con Ollama |
 | `run_agentic.py` | Corre las 12 preguntas, escribe el trace (reanudable); flags `--llm local\|ollama --model --host` |
 | `score_agentic.py` | Scorer (mismo criterio que `memo/evaluate.py`) + `results_agentic.md`; flags `--model-label --system-name --blank-modes` para runs nuevos |
+| `judge_rerank.py` | El JUEZ: SYSTEM + parseo de veredictos (`N: UTIL/NO UTIL`) + clase `Judge` local 1.5B con máx. 3 reintentos |
+| `run_judge.py` | Pipeline del juez (referencia CPU): retrieval híbrido top-10 → 1 llamado al juez → lector solo con seleccionados; flags `--time-test --only --retrieval --model --out` |
+| `score_judge.py` | Scorer del juez + diagnóstico de selección vs evidencia; escribe `results_agentic_judge.md`; flags `--model-label --system-name --blank-modes` |
 | `results_agentic.md` | Informe de resultados |
 | `test_toolcall.py`, `test_toolcall2.py` | Diagnóstico: tool calling nativo falla (cero tool_calls) |
 | `test_cypher.py` | Diagnóstico: el 1.5B compone Cypher con errores de relación |
