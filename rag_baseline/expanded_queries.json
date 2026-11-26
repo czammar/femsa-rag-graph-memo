@@ -1,0 +1,177 @@
+{
+  "method": "traduccion manual al ingles + keywords de dominio (TERM_MAP) de terminos presentes en la pregunta; sin cifras esperadas ni nombres-respuesta",
+  "questions": [
+    {
+      "id": "Q1",
+      "level": 1,
+      "question": "¿Cuáles fueron los ingresos totales consolidados de FEMSA en 2024 y cuánto crecieron vs 2023?",
+      "translation": "What were FEMSA's total consolidated revenues in 2024 and how much did they grow vs 2023?",
+      "keywords": [
+        "total consolidated revenues",
+        "revenue",
+        "growth",
+        "2024"
+      ],
+      "expanded_query": "What were FEMSA's total consolidated revenues in 2024 and how much did they grow vs 2023? total consolidated revenues revenue growth 2024"
+    },
+    {
+      "id": "Q2",
+      "level": 1,
+      "question": "¿Cuántos usuarios activos tuvo Spin by OXXO en 2024?",
+      "translation": "How many active users did Spin by OXXO have in 2024?",
+      "keywords": [
+        "Spin by OXXO",
+        "active users",
+        "users",
+        "2024"
+      ],
+      "expanded_query": "How many active users did Spin by OXXO have in 2024? Spin by OXXO active users users 2024"
+    },
+    {
+      "id": "Q3",
+      "level": 1,
+      "question": "¿Cuántas tiendas sumó Proximidad Américas al cierre de 2024 y cuántas aperturas hubo?",
+      "translation": "How many stores did Proximity Americas add by the end of 2024 and how many openings were there?",
+      "keywords": [
+        "Proximity Americas",
+        "stores",
+        "openings",
+        "new stores",
+        "points of sale",
+        "2024"
+      ],
+      "expanded_query": "How many stores did Proximity Americas add by the end of 2024 and how many openings were there? Proximity Americas stores openings new stores points of sale 2024"
+    },
+    {
+      "id": "Q4",
+      "level": 1,
+      "question": "¿Cuántas estaciones tenía OXXO GAS al cierre de 2024?",
+      "translation": "How many stations did OXXO GAS have at the end of 2024?",
+      "keywords": [
+        "OXXO GAS",
+        "stations",
+        "gas stations",
+        "2024"
+      ],
+      "expanded_query": "How many stations did OXXO GAS have at the end of 2024? OXXO GAS stations gas stations 2024"
+    },
+    {
+      "id": "Q5",
+      "level": 2,
+      "question": "¿Qué división tuvo el mayor crecimiento porcentual de ingresos en 2024: Proximidad Europa o Coca-Cola FEMSA?",
+      "translation": "Which division had the highest percentage revenue growth in 2024: Proximity Europe or Coca-Cola FEMSA?",
+      "keywords": [
+        "Proximity Europe",
+        "Coca-Cola FEMSA",
+        "percentage growth",
+        "revenue",
+        "growth",
+        "2024"
+      ],
+      "expanded_query": "Which division had the highest percentage revenue growth in 2024: Proximity Europe or Coca-Cola FEMSA? Proximity Europe Coca-Cola FEMSA percentage growth revenue growth 2024"
+    },
+    {
+      "id": "Q6",
+      "level": 2,
+      "question": "¿Qué división aportó más ingresos en 2024, Proximidad Américas o Coca-Cola FEMSA, y por cuánto?",
+      "translation": "Which division contributed the most revenue in 2024, Proximity Americas or Coca-Cola FEMSA, and by how much?",
+      "keywords": [
+        "Proximity Americas",
+        "Coca-Cola FEMSA",
+        "revenues",
+        "total revenues",
+        "2024"
+      ],
+      "expanded_query": "Which division contributed the most revenue in 2024, Proximity Americas or Coca-Cola FEMSA, and by how much? Proximity Americas Coca-Cola FEMSA revenues total revenues 2024"
+    },
+    {
+      "id": "Q7",
+      "level": 2,
+      "question": "¿Qué creció más en usuarios, Spin by OXXO o Spin Premia?",
+      "translation": "Which grew more in users, Spin by OXXO or Spin Premia?",
+      "keywords": [
+        "Spin by OXXO",
+        "Spin Premia",
+        "users",
+        "growth",
+        "active users",
+        "2024"
+      ],
+      "expanded_query": "Which grew more in users, Spin by OXXO or Spin Premia? Spin by OXXO Spin Premia users growth active users 2024"
+    },
+    {
+      "id": "Q8",
+      "level": 2,
+      "question": "¿En qué países opera Proximidad Américas según el informe?",
+      "translation": "In which countries does Proximity Americas operate according to the report?",
+      "keywords": [
+        "Proximity Americas",
+        "countries",
+        "operates",
+        "operations"
+      ],
+      "expanded_query": "In which countries does Proximity Americas operate according to the report? Proximity Americas countries operates operations"
+    },
+    {
+      "id": "Q9",
+      "level": 3,
+      "question": "¿Qué porcentaje de los ingresos consolidados 2024 representan Proximidad Américas y Coca-Cola FEMSA juntas?",
+      "translation": "What percentage of 2024 consolidated revenues do Proximity Americas and Coca-Cola FEMSA together represent?",
+      "keywords": [
+        "Proximity Americas",
+        "Coca-Cola FEMSA",
+        "consolidated revenues",
+        "percentage",
+        "share",
+        "together",
+        "2024"
+      ],
+      "expanded_query": "What percentage of 2024 consolidated revenues do Proximity Americas and Coca-Cola FEMSA together represent? Proximity Americas Coca-Cola FEMSA consolidated revenues percentage share together 2024"
+    },
+    {
+      "id": "Q10",
+      "level": 3,
+      "question": "¿Qué estrategia articula Retail, Bebidas y el ecosistema digital de FEMSA, y a través de qué se crea ese ecosistema?",
+      "translation": "What strategy articulates FEMSA Retail, Beverages and the digital ecosystem, and through what is that ecosystem created?",
+      "keywords": [
+        "FEMSA",
+        "strategy",
+        "Retail",
+        "Beverages",
+        "digital ecosystem",
+        "2024"
+      ],
+      "expanded_query": "What strategy articulates FEMSA Retail, Beverages and the digital ecosystem, and through what is that ecosystem created? FEMSA strategy Retail Beverages digital ecosystem 2024"
+    },
+    {
+      "id": "Q11",
+      "level": 3,
+      "question": "¿Cómo evolucionó la iniciativa digital de FEMSA en 2024?",
+      "translation": "How did FEMSA's digital initiative evolve in 2024?",
+      "keywords": [
+        "Digital@FEMSA",
+        "digital initiative",
+        "evolution",
+        "evolved",
+        "2024"
+      ],
+      "expanded_query": "How did FEMSA's digital initiative evolve in 2024? Digital@FEMSA digital initiative evolution evolved 2024"
+    },
+    {
+      "id": "Q12",
+      "level": 3,
+      "question": "¿Qué división tuvo el año más complicado en 2024 según el propio informe, y cuánto crecieron sus ingresos?",
+      "translation": "Which division had the most difficult year in 2024 according to the report itself, and how much did its revenues grow?",
+      "keywords": [
+        "Health",
+        "division",
+        "most difficult year",
+        "challenging year",
+        "revenue",
+        "growth",
+        "2024"
+      ],
+      "expanded_query": "Which division had the most difficult year in 2024 according to the report itself, and how much did its revenues grow? Health division most difficult year challenging year revenue growth 2024"
+    }
+  ]
+}

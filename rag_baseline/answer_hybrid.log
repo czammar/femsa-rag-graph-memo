@@ -1,0 +1,17 @@
+loading reader memo/models/Qwen2.5-1.5B-Instruct (bf16, CPU)...
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   6%|▌         | 19/338 [00:00<00:02, 157.71it/s]Loading weights:  17%|█▋        | 57/338 [00:00<00:01, 264.06it/s]Loading weights:  25%|██▍       | 84/338 [00:00<00:01, 177.98it/s]Loading weights:  31%|███       | 105/338 [00:00<00:01, 178.20it/s]Loading weights:  38%|███▊      | 127/338 [00:00<00:01, 165.10it/s]Loading weights:  44%|████▍     | 148/338 [00:00<00:01, 151.05it/s]Loading weights:  49%|████▊     | 164/338 [00:01<00:01, 141.45it/s]Loading weights:  58%|█████▊    | 196/338 [00:01<00:00, 170.40it/s]Loading weights:  63%|██████▎   | 214/338 [00:01<00:00, 145.99it/s]Loading weights:  68%|██████▊   | 230/338 [00:01<00:00, 146.48it/s]Loading weights:  73%|███████▎  | 246/338 [00:01<00:00, 135.43it/s]Loading weights:  77%|███████▋  | 260/338 [00:01<00:00, 101.95it/s]Loading weights:  81%|████████▏ | 275/338 [00:01<00:00, 111.64it/s]Loading weights:  85%|████████▌ | 288/338 [00:02<00:00, 82.61it/s] Loading weights:  90%|████████▉ | 304/338 [00:02<00:00, 89.97it/s]Loading weights:  95%|█████████▍| 320/338 [00:02<00:00, 97.47it/s]Loading weights: 100%|██████████| 338/338 [00:02<00:00, 132.35it/s]
+model loaded in 9.1s
+Q1 -> Los ingresos totales consolidados de FEMSA en 2024 ascendieron a 781,585 millones de pesos mexicanos, representando un incremento del 11,2% frente al año anteri
+Q2 -> 8.6 millones de usuarios activos en Spin by OXXO en 2024.
+Q3 -> No lo sé.
+Q4 -> Al cierre de 2024, OXXO GAS contaba con 12 estaciones.
+Q5 -> No lo sé.
+Q6 -> En 2024, la División Proximidad Américas aportó más ingresos que Coca-Cola FEMSA. Los ingresos totales de la División Proximidad Américas fueron de Ps. 307,197 
+Q7 -> Spin Premia creció más en usuarios que Spin by OXXO. Según el informe, Spin Premia tiene 24.6 millones de activos y Spin by OXXO tiene 8.6 millones de activos, 
+Q8 -> Según el informe, Proximidad Américas opera en México y América Latina.
+Q9 -> No lo sé.
+Q10 -> La estrategia que articula Retail, Bebidas y el ecosistema digital de FEMSA se basa en un modelo de crecimiento sostenible y duradero. Para crear este ecosistem
+Q11 -> En 2024, FEMSA avanzó significativamente en su estrategia digital al transformar la marca Digital@FEMSA en Spin. Esta evolución incluyó un cambio en el branding
+Q12 -> No lo sé.
+trace -> rag_baseline/run_trace_hybrid.jsonl (1236.2s total)

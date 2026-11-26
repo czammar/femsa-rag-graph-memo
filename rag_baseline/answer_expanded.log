@@ -1,0 +1,19 @@
+loading reader memo/models/Qwen2.5-1.5B-Instruct (bf16, CPU)...
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:   7%|▋         | 25/338 [00:00<00:01, 169.01it/s]Loading weights:  12%|█▏        | 42/338 [00:00<00:03, 74.96it/s] Loading weights:  18%|█▊        | 60/338 [00:00<00:02, 98.08it/s]Loading weights:  24%|██▎       | 80/338 [00:00<00:02, 116.81it/s]Loading weights:  29%|██▊       | 97/338 [00:00<00:01, 128.94it/s]Loading weights:  38%|███▊      | 130/338 [00:00<00:01, 175.31it/s]Loading weights:  44%|████▍     | 150/338 [00:01<00:01, 160.18it/s]Loading weights:  56%|█████▌    | 190/338 [00:01<00:00, 203.54it/s]Loading weights:  63%|██████▎   | 214/338 [00:01<00:00, 189.32it/s]Loading weights:  69%|██████▉   | 234/338 [00:01<00:00, 168.97it/s]Loading weights:  75%|███████▍  | 252/338 [00:01<00:00, 164.77it/s]Loading weights:  80%|████████  | 272/338 [00:01<00:00, 167.15it/s]Loading weights:  86%|████████▌ | 290/338 [00:01<00:00, 159.65it/s]Loading weights:  91%|█████████ | 307/338 [00:02<00:00, 120.72it/s]Loading weights:  95%|█████████▍| 321/338 [00:02<00:00, 110.43it/s]Loading weights: 100%|██████████| 338/338 [00:02<00:00, 146.62it/s]
+model loaded in 7.1s
+Q1 -> Los ingresos totales consolidados de FEMSA en 2024 ascendieron a Ps. 781,585 millones, un incremento del 11.2% respecto al año anterior (2023).
+Q2 -> 8.6 millones
+Q3 -> En Proximidad América, el total de tiendas consolidadas al cierre de 2024 fue de 26,322, y surcaron un total de 438 nuevas tiendas durante ese año.
+Q4 -> Al cierre de 2024, OXXO GAS contaba con un total de 571 servicios de gasolina.
+Q5 -> Para determinar qué división tuvo el mayor crecimiento porcentual de ingresos en 2024, necesitamos analizar los datos proporcionados.
+
+En el fragmento 113, se m
+Q6 -> En 2024, la División Proximidad Américas aportó más ingresos que Coca-Cola FEMSA. Los ingresos totales de Proximidad Américas fueron Ps. 307,197 millones, mient
+Q7 -> Spin Premia creció un 31.5%, mientras que Spin by OXXO creció un 32.8%.
+Q8 -> Según el informe anual de FEMSA 2024, Proximidad Américas opera en 18 países diferentes, incluyendo Argentina, Austria, Brasil, Colombia, Costa Rica, Chile, Ecu
+Q9 -> Según el informe anual de FEMSA 2024, los ingresos consolidados totales fueron de Ps. 781,585 millones. Los ingresos de Proximidad América y Coca-Cola FEMSA jun
+Q10 -> FEMSA Forward es la estrategia que articula Retail, Bebidas y el ecosistema digital de FEMSA. Se crea este ecosistema basándose en datos y análisis para transfo
+Q11 -> En 2024, FEMSA avanzó significativamente su estrategia digital transformando el nombre de su división Digital@FEMSA en Spin. Este cambio reflejaba un reajuste e
+Q12 -> La división que tuvo el año más complicado en 2024 fue la salud, debido a la intensa competencia en el mercado mexicano. Su ingresos aumentaron un 14.2% en rela
+trace -> rag_baseline/run_trace_expanded.jsonl (1548.3s total)

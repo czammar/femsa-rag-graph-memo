@@ -15,7 +15,9 @@ PY := $(VENV_BIN)/python
 .PHONY: all check-python-version get-python-version install sync setup clean help \
 	download extract build-cypher load-relate queries download-models \
 	train-memo train-memo-v2 eval-memo eval-memo-v2 \
-	rag-retrieve rag-answer rag-score
+	rag-retrieve rag-answer rag-score \
+	rag-retrieve-hybrid rag-answer-hybrid rag-score-hybrid \
+	rag-expand rag-retrieve-expanded rag-answer-expanded rag-score-expanded
 
 ## Check is python version of the project
 check-python-version:
@@ -143,3 +145,31 @@ rag-answer: rag-retrieve download-models
 ## Score the RAG baseline and write rag_baseline/results.md
 rag-score: rag-answer
 	$(PY) rag_baseline/score.py
+
+## Retrieve top-5 with hybrid BM25 Okapi + MiniLM, RRF k=60 (~1 min CPU)
+rag-retrieve-hybrid: download
+	$(PY) rag_baseline/retrieve_hybrid.py
+
+## Answer the 12 questions with the hybrid retrieval top-5 (~21 min CPU)
+rag-answer-hybrid: rag-retrieve-hybrid download-models
+	$(PY) rag_baseline/answer.py --retrieval rag_baseline/retrieval_hybrid.json --out rag_baseline/run_trace_hybrid.jsonl
+
+## Score the hybrid RAG run and write rag_baseline/results_hybrid.md
+rag-score-hybrid: rag-answer-hybrid
+	$(PY) rag_baseline/score_hybrid.py
+
+## Expand the 12 questions: manual English translation + domain keywords (<1 s, with anti-leakage guard)
+rag-expand:
+	$(PY) rag_baseline/expand_queries.py
+
+## Retrieve top-5 with the expanded queries, same hybrid RRF k=60 (~1 min CPU)
+rag-retrieve-expanded: rag-expand download
+	$(PY) rag_baseline/retrieve_expanded.py
+
+## Answer the 12 questions with the expanded retrieval top-5 (~26 min CPU)
+rag-answer-expanded: rag-retrieve-expanded download-models
+	$(PY) rag_baseline/answer.py --retrieval rag_baseline/retrieval_expanded.json --out rag_baseline/run_trace_expanded.jsonl
+
+## Score the expanded RAG run and write rag_baseline/results_expanded.md
+rag-score-expanded: rag-answer-expanded
+	$(PY) rag_baseline/score_expanded.py

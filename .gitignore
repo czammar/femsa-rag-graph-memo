@@ -11,6 +11,10 @@ pipeline/data/chunks.jsonl
 memo/reflection_qa_v2.jsonl
 rag_baseline/retrieval.json
 rag_baseline/run_trace.jsonl
+rag_baseline/retrieval_hybrid.json
+rag_baseline/run_trace_hybrid.jsonl
+rag_baseline/retrieval_expanded.json
+rag_baseline/run_trace_expanded.jsonl
 memo/models/
 memo/memory_model/
 memo/memory_model_v2/

@@ -79,7 +79,12 @@ femsa-rag-graph-memo/
     ├── results.md            # Tabla por pregunta, modos de fallo, veredicto
     ├── retrieval.json        # Top-5 por pregunta (se genera con make rag-retrieve)
     ├── run_trace.jsonl       # Respuestas del reader + contexto usado (se genera con make rag-answer)
-    └── README.md             # Runbook del baseline RAG
+    ├── retrieve_hybrid.py / score_hybrid.py / results_hybrid.md  # Variante híbrida BM25+denso (RRF k=60)
+    ├── retrieval_hybrid.json / run_trace_hybrid.jsonl  # (se generan con make rag-retrieve-hybrid / rag-answer-hybrid)
+    ├── expand_queries.py / expanded_queries.json  # Expansión de queries: traducción + keywords de dominio
+    ├── retrieve_expanded.py / score_expanded.py / results_expanded.md  # Variante híbrida + expansión
+    ├── retrieval_expanded.json / run_trace_expanded.jsonl  # (se generan con make rag-retrieve-expanded / rag-answer-expanded)
+    └── README.md             # Runbook del baseline RAG y sus variantes
 ```
 
 Los detalles de cada parte están en `pipeline/README.md`, `memo/README.md` y `rag_baseline/README.md`.
@@ -96,6 +101,8 @@ Mismo corpus (FEMSA 2024), mismas 12 preguntas en 3 niveles (hecho directo, comp
 | **MEMO run 1** (0.5B, LoRA r=8, 1 época, 446 QA) | **0/12** | 6/12 |
 | **MEMO run 2** (0.5B, LoRA r=32, 3 épocas, 1,414 QA, EXEC 1.5B) | **2/12** (+1 parcial) | **2/12** |
 | **RAG vectorial** (MiniLM top-5 + lector Qwen2.5-1.5B) | **2/12** (correctas Q6 y Q11; techo real 9/12: 3 cifras esperadas no están en el informe; detalle en [rag_baseline/results.md](rag_baseline/results.md)) | **2/12** |
+| **RAG híbrido** (BM25 Okapi + MiniLM, RRF k=60, mismo lector/scorer) | **2/12** (correctas Q1 y Q11; no cerró la brecha de retrieval: las preguntas están en español y el corpus en inglés, y los tokens discriminativos viven en la respuesta, no en la pregunta; detalle en [rag_baseline/results_hybrid.md](rag_baseline/results_hybrid.md)) | **1/12** |
+| **RAG híbrido + expansión de queries** (traducción manual al inglés + mapa de términos de dominio, mismo retrieval híbrido/lector/scorer, sin respuestas filtradas) | **5/12** (correctas Q1, Q4, Q6, Q8 y Q10; el primer arreglo del RAG que movió el marcador; el cuello de botella pasó del retrieval al lector; detalle en [rag_baseline/results_expanded.md](rag_baseline/results_expanded.md)) | 3/12 según el scorer (1/12 real: dos flags son artefactos, ver `results_expanded.md`) |
 
 El veredicto honesto: más datos (3.2×), más épocas (3×) y más LoRA (r=8 → r=32) fijaron las cifras simples y repetidas (571 estaciones, 307,197 vs 279,793) y bajaron las alucinaciones de 6/12 a 2/12, pero el sistema sigue fallando en todo lo que exige componer: sumar, comparar, atribuir un hecho a su división o nombrar una estrategia. En dos preguntas la memoria ya tenía el dato correcto y fue el ejecutivo quien lo estropeó al sintetizar. **La memoria en pesos es compresión con pérdida, y la pérdida se concentra justo donde se necesita precisión**: cifras exactas, comparaciones y agregaciones. El grafo no tiene ese problema porque la respuesta *es* el dato verificado.
 
@@ -130,6 +137,27 @@ make rag-score         # escribe rag_baseline/results.md
 ```
 
 Resultado: **2/12** (correctas Q6 y Q11), 2/12 con alucinación. Leer en `rag_baseline/results.md` (tabla por pregunta, modos de fallo y caveats). `make rag-answer` descarga el modelo 1.5B automáticamente (`make download-models`). Techo real sobre este set: 9/12 — las cifras esperadas de Q2 (+24.9%), Q7 (+27.5%) y Q9 (39.3%/35.8%/75.1%) no están en el informe (las dos primeras son del comunicado 4Q24; las terceras son participaciones calculadas).
+
+### RAG híbrido (BM25 + denso): 2/12
+
+```bash
+make rag-retrieve-hybrid  # BM25 Okapi + MiniLM, fusión RRF k=60 (~1 min en CPU; depende de make download)
+make rag-answer-hybrid    # reader Qwen2.5-1.5B en CPU con el top-5 híbrido (~21 min)
+make rag-score-hybrid     # escribe rag_baseline/results_hybrid.md
+```
+
+Resultado: **2/12** (correctas Q1 y Q11), 1/12 con alucinación. Leer en `rag_baseline/results_hybrid.md`. El híbrido no cerró la brecha de retrieval del denso: de los 4 fallos de retrieval (Q3, Q4, Q10, Q12) no arregló ninguno — las preguntas están en español y el corpus en inglés, y BM25 solo empareja tokens exactos; los tokens discriminativos viven en la respuesta, no en la pregunta. El único flip a favor fue Q1 (el híbrido trajo el 11.2% y el lector eligió 781,585); el flip en contra fue Q6 (el lector tomó 128,736, utilidad bruta de Coca-Cola FEMSA, como su ingreso).
+
+### RAG híbrido + expansión de queries: 5/12
+
+```bash
+make rag-expand            # traducción manual al inglés + keywords de dominio (<1 s; con guardia anti-filtración)
+make rag-retrieve-expanded # mismo híbrido RRF k=60 con las queries expandidas (~1 min en CPU)
+make rag-answer-expanded   # reader Qwen2.5-1.5B en CPU con el top-5 expandido (~26 min)
+make rag-score-expanded    # escribe rag_baseline/results_expanded.md
+```
+
+Resultado: **5/12** (correctas Q1, Q4, Q6, Q8 y Q10), el primer arreglo del RAG que movió el marcador. Leer en `rag_baseline/results_expanded.md`. La expansión subió la cobertura literal en top-5 de 1/12 a 4/12 y el cuello de botella pasó del retrieval al lector (Q3 y Q12 ya traen el dato y el lector lo elige mal). La guardia anti-filtración de `expand_queries.py` aborta si la query lleva cifras esperadas o nombres-respuesta. Dos honestidades: Q7 tiene conflicto de ground-truth (el informe p.34 dice Spin +32.8% / Premia +31.5% y el lector dio exactamente eso; lo esperado +27.5%/+24.9% es del comunicado 4Q24, así que con la regla de Q3 sería 6/12) y Q8 es correcta por la regla de keywords aunque enumera 18 países del grupo, no solo los 4 de la división.
 
 ### MEMO run 1: 0/12
 
@@ -167,6 +195,13 @@ make eval-memo-v2      # run 2: evaluación + control + puntuación
 make rag-retrieve      # RAG: embeddings MiniLM + top-5 (~1 min en CPU)
 make rag-answer        # RAG: reader Qwen2.5-1.5B en CPU (~24 min)
 make rag-score         # RAG: escribe rag_baseline/results.md (2/12)
+make rag-retrieve-hybrid  # RAG híbrido: BM25 + MiniLM, RRF k=60 (~1 min en CPU)
+make rag-answer-hybrid    # RAG híbrido: reader con el top-5 híbrido (~21 min)
+make rag-score-hybrid     # RAG híbrido: escribe rag_baseline/results_hybrid.md (2/12)
+make rag-expand           # RAG expansión: traducción + keywords de dominio (<1 s)
+make rag-retrieve-expanded  # RAG expansión: retrieval híbrido con queries expandidas (~1 min)
+make rag-answer-expanded    # RAG expansión: reader con el top-5 expandido (~26 min)
+make rag-score-expanded     # RAG expansión: escribe rag_baseline/results_expanded.md (5/12)
 ```
 
 Ver `make help` para la lista completa.
@@ -183,6 +218,10 @@ Ver `make help` para la lista completa.
 * **El dataset v2 de MEMO** (`memo/reflection_qa_v2.jsonl`, 431 KB): se regenera de forma determinista con `make augment-memo-v2` a partir de `memo/reflection_qa.jsonl` (que sí está en el repo); `make train-memo-v2` y `make eval-memo-v2` ya lo generan automáticamente.
 * **El top-5 del RAG** (`rag_baseline/retrieval.json`, 198 KB): se regenera con `make rag-retrieve`.
 * **La traza del reader RAG** (`rag_baseline/run_trace.jsonl`, 123 KB): se regenera con `make rag-answer`.
+* **El top-5 híbrido** (`rag_baseline/retrieval_hybrid.json`, 195 KB): se regenera con `make rag-retrieve-hybrid`.
+* **La traza del reader híbrido** (`rag_baseline/run_trace_hybrid.jsonl`, 124 KB): se regenera con `make rag-answer-hybrid`.
+* **El top-5 expandido** (`rag_baseline/retrieval_expanded.json`, 208 KB): se regenera con `make rag-retrieve-expanded`.
+* **La traza del reader expandido** (`rag_baseline/run_trace_expanded.jsonl`, 127 KB): se regenera con `make rag-answer-expanded`.
 * **Logs de entrenamiento** (`*.log`): ruido de corrida, los resúmenes están en `memo/training_log_v2.json` y en los `results*.md`.
 
 ---
