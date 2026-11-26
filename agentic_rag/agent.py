@@ -9,8 +9,12 @@ herramientas LangChain (@tool) que envuelven código ya verificado:
      (vía CLI `relate`, mismo store que pipeline/load_relate.py).
   3. calculator: aritmética segura por AST (sin exec).
 
-LLM: Qwen2.5-1.5B-Instruct local (bf16, CPU), mismo modelo que hizo de
-EXECUTIVE en MEMO run 2 y de reader en el RAG.
+LLM: por defecto Qwen2.5-1.5B-Instruct local (bf16, CPU), mismo modelo
+que hizo de EXECUTIVE en MEMO run 2 y de reader en el RAG. Con
+`configure_llm("ollama", model="qwen2.5:7b-instruct")` el mismo grafo
+corre contra un modelo servido por Ollama (ver agentic_rag/OLLAMA.md):
+mismo grafo, mismas herramientas, mismos prompts, mismo scorer; solo
+cambia el cerebro. La funcion `call_llm` vive en llm_backends.py.
 
 NOTA SOBRE TOOL CALLING NATIVO (verificado, no supuesto):
 Se probó `chat.bind_tools(...)` de LangChain con este modelo
@@ -35,17 +39,16 @@ import sys
 import time
 from pathlib import Path
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "rag_baseline"))
 sys.path.insert(0, str(ROOT / "memo"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from langchain_core.tools import tool  # noqa: E402
 from langgraph.graph import END, StateGraph  # noqa: E402
+from llm_backends import backend_name, call_llm  # noqa: E402
+from llm_backends import configure as configure_llm  # noqa: E402
 
-MODEL = "memo/models/Qwen2.5-1.5B-Instruct"
 CHUNKS = ROOT / "pipeline/data/chunks.jsonl"
 RELATE_DB = ROOT / "pipeline/data/femsa.rl"
 RELATE_BIN = Path.home() / ".local/bin/relate"
@@ -186,42 +189,8 @@ TOOLS = {"vector_search": vector_search,
          "calculator": calculator}
 
 # --- LLM ------------------------------------------------------------------
-_TOK = None
-_MODEL = None
-
-
-def _ensure_model():
-    global _TOK, _MODEL
-    if _MODEL is not None:
-        return
-    _TOK = AutoTokenizer.from_pretrained(str(ROOT / MODEL))
-    print(f"[llm] cargando {MODEL} (bf16, CPU)...", flush=True)
-    t0 = time.time()
-    _MODEL = AutoModelForCausalLM.from_pretrained(
-        str(ROOT / MODEL), torch_dtype=torch.bfloat16)
-    _MODEL.eval()
-    print(f"[llm] modelo cargado en {time.time() - t0:.1f}s", flush=True)
-
-
-def call_llm(messages, max_new_tokens=MAX_NEW_TOKENS, stop_strings=None):
-    """Una llamada al LLM con chat template (patrón probado de
-    rag_baseline/answer.py y memo/executive_v2.py). Devuelve solo el
-    texto generado, sin eco del prompt. stop_strings corta la generación
-    (el modelo de 1.5B tiende a seguir escribiendo: repite el prompt o
-    añade turnos inventados)."""
-    _ensure_model()
-    text = _TOK.apply_chat_template(messages, tokenize=False,
-                                    add_generation_prompt=True)
-    ids = _TOK(text, return_tensors="pt")
-    kwargs = dict(max_new_tokens=max_new_tokens, do_sample=False,
-                  pad_token_id=_TOK.eos_token_id)
-    if stop_strings:
-        kwargs["stop_strings"] = stop_strings
-        kwargs["tokenizer"] = _TOK
-    with torch.no_grad():
-        out = _MODEL.generate(**ids, **kwargs)
-    return _TOK.decode(out[0][ids["input_ids"].shape[1]:],
-                       skip_special_tokens=True).strip()
+# call_llm vive en llm_backends.py (backend local 1.5B por defecto, u
+# Ollama con configure_llm("ollama", model=...)). Solo se delega aqui.
 
 
 PLAN_SYSTEM = (
@@ -445,6 +414,7 @@ def run_question(question, qid, level, graph=None):
     out = graph.invoke(state)
     return {"id": qid, "level": level, "question": question,
             "decomposition": "agentic",
+            "llm_backend": backend_name(),
             "final_answer": out["final_answer"],
             "steps": out["steps"],
             "plan_raw_outputs": out.get("plan_raws", []),

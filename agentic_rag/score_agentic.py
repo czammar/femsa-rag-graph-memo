@@ -16,6 +16,15 @@ fallo contra el corpus (igual que en score_expanded.py).
 Uso:
   agentic_rag/.venv/bin/python agentic_rag/score_agentic.py [--trace agentic_rag/run_trace_agentic.jsonl]
                                                    [--out agentic_rag/results_agentic.md]
+  # Corrida Ollama (escribe su propio informe, nunca toca el del 1.5B):
+  agentic_rag/.venv/bin/python agentic_rag/score_agentic.py \
+      --trace agentic_rag/run_trace_agentic_ollama.jsonl \
+      --out agentic_rag/results_agentic_ollama.md \
+      --model-label "Ollama qwen2.5:7b-instruct" \
+      --system-name "RAG agentico Ollama (este run)" --blank-modes
+  # Despues de verificar los modos de fallo a mano en VERIFIED_MODES,
+  # se vuelve a correr SIN --blank-modes (con el mismo --model-label)
+  # para que el informe lleve los modos reales y el veredicto.
 """
 import argparse
 import json
@@ -44,6 +53,14 @@ def main():
     ap.add_argument("--qa", default="memo/reflection_qa.jsonl")
     ap.add_argument("--seed", default="pipeline/triples_seed.json")
     ap.add_argument("--out", default="agentic_rag/results_agentic.md")
+    ap.add_argument("--model-label", default="local Qwen2.5-1.5B-Instruct (bf16, CPU)",
+                    help="modelo que corrio el agente (aparece en el informe)")
+    ap.add_argument("--system-name", default="RAG agentico (este run)",
+                    help="etiqueta de la fila de este run en la tabla comparativa")
+    ap.add_argument("--blank-modes", action="store_true",
+                    help="modos de fallo en PENDIENTE (para un run nuevo: "
+                    "se verifican a mano y se llenan en VERIFIED_MODES; "
+                    "el veredicto se escribe despues)")
     args = ap.parse_args()
 
     eval_data = json.load(open(args.eval))
@@ -85,6 +102,9 @@ def main():
         "Q11": "evidencia correcta ignorada (la primera consulta devolvio {\"x.nombre\":\"Spin\"} y el agente repitio la misma consulta 2 veces mas y se abstuvo)",
         "Q12": "abstencion tras 3 consultas fallidas (error de sintaxis Cypher: 'LIMIT 1, 1' estilo SQL + ORDER BY sobre r.variacion_pct de OPERA_EN, que no tiene esa propiedad)",
     }
+
+    if args.blank_modes:
+        VERIFIED_MODES = {qid: "PENDIENTE" for qid in VERIFIED_MODES}
 
     rows = []
     for r in trace:
@@ -154,19 +174,32 @@ def main():
         return sum(1 for r in by_level.get(lv, [])
                    if r["verdict"] == "correcta")
 
+    tool_note = (
+        "El modelo de 1.5B no emite tool calls nativos de forma fiable "
+        "(verificado en test_toolcall.py: cero tool_calls con bind_tools), "
+        "asi que el agente usa un bucle ReAct textual: el modelo escribe "
+        "`ACCION: herramienta(\"argumento\")` o `RESPUESTA: <texto>` y el "
+        "nodo act lo ejecuta.")
+    if args.blank_modes:
+        # Run nuevo (p. ej. Ollama): no se afirma nada del modelo hasta
+        # verificarlo; el bucle sigue siendo ReAct textual porque es el
+        # codigo del agente, no del modelo.
+        tool_note = (
+            "El agente usa un bucle ReAct textual: el modelo escribe "
+            "`ACCION: herramienta(\"argumento\")` o `RESPUESTA: <texto>` y "
+            "el nodo act lo ejecuta. Si este modelo emite tool calls "
+            "nativos o no, esta por verificar (ver OLLAMA.md).")
+
     lines = ["# Resultados RAG agentico (LangChain + LangGraph, ReAct textual) — FEMSA 2024",
              "",
              "Sistema: agente ReAct con LangGraph (nodos plan -> act -> "
-             "observe -> answer), modelo local Qwen2.5-1.5B-Instruct (bf16, "
-             "CPU), maximo 3 pasos de herramienta por pregunta. Herramientas: "
+             f"observe -> answer), modelo {args.model_label}, maximo 3 "
+             "pasos de herramienta por pregunta. Herramientas: "
              "`vector_search` (retrieval hibrido BM25 + MiniLM, RRF k=60, "
              "top-5 paginas), `graph_query` (Cypher contra el store Relate "
-             "femsa.rl) y `calculator` (aritmetica segura por AST). El modelo "
-             "de 1.5B no emite tool calls nativos de forma fiable (verificado "
-             "en test_toolcall.py: cero tool_calls con bind_tools), asi que el "
-             "agente usa un bucle ReAct textual: el modelo escribe "
-             "`ACCION: herramienta(\"argumento\")` o `RESPUESTA: <texto>` y el "
-             "nodo act lo ejecuta. Scorer identico a memo/evaluate.py (misma "
+             "femsa.rl) y `calculator` (aritmetica segura por AST). "
+             + tool_note +
+             " Scorer identico a memo/evaluate.py (misma "
              "exactitud numerica, misma definicion de alucinacion, misma "
              "regla Q3 con 1,596).",
              "",
@@ -217,14 +250,15 @@ def main():
               "| Sistema | Correctas | Nivel 1 | Nivel 2 | Nivel 3 |",
               "|---------|-----------|---------|---------|---------|",
               "| Grafo (Relate, Cypher) | 12/12 | 4/4 | 4/4 | 4/4 |",
-              f"| RAG agentico (este run) | {total_ok}/12 | {lvl_ok(1)}/4 | {lvl_ok(2)}/4 | {lvl_ok(3)}/4 |",
+              f"| {args.system_name} | {total_ok}/12 | {lvl_ok(1)}/4 | {lvl_ok(2)}/4 | {lvl_ok(3)}/4 |",
               "| RAG hibrido + expansion de queries | 5/12 | 2/4 | 2/4 | 1/4 |",
               "| RAG hibrido BM25+denso (sin expansion) | 2/12 | 1/4 | 0/4 | 1/4 |",
               "| RAG vectorial denso puro | 2/12 | 0/4 | 1/4 | 1/4 |",
               "| MEMO run 2 (0.5B LoRA r=32 + ejecutivo 1.5B) | 2/12 | 1/4 | 1/4 | 0/4 |",
               "| MEMO run 1 (0.5B LoRA r=8 + ejecutivo 0.5B) | 0/12 | 0/4 | 0/4 | 0/4 |",
-              "",
-              "## Que cambio vs el RAG hibrido + expansion (5/12)",
+              ""]
+    if not args.blank_modes:
+        lines += ["## Que cambio vs el RAG hibrido + expansion (5/12)",
               "",
               "De 5/12 a 2/12: tres flips en contra y ninguno a favor. El "
               "expandido acierta Q1, Q4, Q6, Q8 y Q10; el agentico solo Q4 y "
@@ -299,7 +333,22 @@ def main():
               "agente con menos grados de libertad (plantillas cerradas, "
               "verificacion automatica de la consulta antes de ejecutarla).",
               "",
-              "## Caveats (verificados, no supuestos)",
+              ]
+    else:
+        lines += ["## Veredicto para el post",
+                  "",
+                  "Pendiente de revision manual. Los numeros de la tabla "
+                  "de arriba ya son comparables con los demas sistemas "
+                  "(mismo scorer, mismas 12 preguntas); lo que falta es "
+                  "verificar cada fallo contra el corpus y contra la "
+                  "traza, llenar VERIFIED_MODES en score_agentic.py y "
+                  "volver a correr el scorer sin --blank-modes para que "
+                  "escriba los modos de fallo y el veredicto. Ver "
+                  "agentic_rag/OLLAMA.md.",
+                  "",
+                  ]
+    if not args.blank_modes:
+        lines += ["## Caveats (verificados, no supuestos)",
               "",
               "- **El agente nunca uso vector_search ni calculator.** Las 24 "
               "llamadas fueron graph_query. La instruccion 'Empieza SIEMPRE "
@@ -350,7 +399,22 @@ def main():
               "cerradas' es el arreglo mas barato que el post puede "
               "proponer.",
               "",
-              "## Notas de ground-truth",
+              ]
+    else:
+        lines += ["## Caveats (verificados, no supuestos)",
+                  "",
+                  "- **Q7 y Q9 son techo (9/12), igual que en los otros runs.** "
+                  "Las cifras esperadas de Q7 (+27.5%/+24.9%) vienen del "
+                  "comunicado 4Q24 y las de Q9 (39.3/35.8/75.1%) son "
+                  "participaciones calculadas: no estan en el informe. Q2 "
+                  "tambien pide +24.9% como parte de lo esperado. El techo real "
+                  "del agente sobre este set es 9/12, no 12/12.",
+                  "- **El resto de los caveats esta pendiente.** Los modos de "
+                  "fallo de este run todavia no se verificaron a mano: ver "
+                  "la seccion de veredicto arriba y agentic_rag/OLLAMA.md.",
+                  "",
+                  ]
+    lines += ["## Notas de ground-truth",
               ""]
     for r in rows:
         if r["note"]:

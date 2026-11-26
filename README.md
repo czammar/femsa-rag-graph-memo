@@ -93,6 +93,8 @@ femsa-rag-graph-memo/
     └── README.md             # Runbook del baseline RAG y sus variantes
 └── agentic_rag/          # RAG agéntico (LangChain + LangGraph, ReAct textual)
     ├── agent.py              # Grafo LangGraph + herramientas + prompts (con plantillas Cypher)
+    ├── llm_backends.py       # Backends del LLM: local 1.5B y Ollama (ChatOllama)
+    ├── OLLAMA.md             # Guía: mismo agente con un modelo 7B/14B en tu máquina
     ├── run_agentic.py        # Corre las 12 preguntas, escribe la traza (reanudable)
     ├── score_agentic.py      # Scorer + results_agentic.md
     ├── results_agentic.md    # 2/12: el bucle no suma con un modelo 1.5B
@@ -203,6 +205,16 @@ make agentic-score       # escribe agentic_rag/results_agentic.md
 
 Resultado: **2/12** (correctas Q4 y Q8), 0/12 con alucinación. Leer en `agentic_rag/results_agentic.md`. El agente usa el mismo modelo 1.5B y el mismo scorer que el RAG, con tres herramientas (retrieval híbrido, Cypher en Relate, calculadora), pero el modelo de 1.5B no emite tool calls nativos (verificado: cero tool_calls con `bind_tools`), así que el bucle es ReAct textual. En la práctica el agente nunca usó vector_search ni calculadora: las 24 llamadas fueron graph_query. Los dos aciertos son copias literales de la plantilla de consulta; todo lo que exige componer se cae, y en Q11 la primera consulta devolvió "Spin" y el agente se abstuvo igual. La corrida se cayó en Q5 por un bug del router (faltaba "plan" en el mapa de `add_conditional_edges`) y se reanudó desde Q5. Necesita `relate serve` corriendo (ver `agentic_rag/README.md`).
 
+El 2/12 no muestra el poder de lo agéntico, muestra que un 1.5B no sabe manejar herramientas. El mismo agente contra un modelo más grande servido por Ollama es la prueba real del bucle (mismo grafo, mismas herramientas, mismos prompts, mismo scorer; solo cambia el cerebro): ver **`agentic_rag/OLLAMA.md`**.
+
+```bash
+make agentic-run-ollama                        # 7B por defecto (qwen2.5:7b-instruct)
+make agentic-run-ollama MODEL=qwen2.5:14b-instruct
+make agentic-score-ollama                      # escribe agentic_rag/results_agentic_ollama.md
+```
+
+La traza y el informe Ollama (`run_trace_agentic_ollama.jsonl`, `results_agentic_ollama.md`) nunca tocan los del 1.5B. **Nota honesta:** la ruta Ollama no se corrió de punta a punta en la VM del autor (sin servidor Ollama ni 7B ahí, 7 GB de RAM); lo verificado es el código, los flags y el error amable sin servidor. La primera corrida real es la tuya.
+
 ### MEMO run 1: 0/12
 
 ```bash
@@ -249,6 +261,8 @@ make rag-score-expanded     # RAG expansión: escribe rag_baseline/results_expan
 make ragas-metrics          # RAGAS determinista de las 3 variantes RAG (~2 s + ~36 s; escribe rag_baseline/ragas/metrics_ragas.json)
 make agentic-run            # RAG agéntico: 12 preguntas con el bucle ReAct (~65 min en CPU, reanudable)
 make agentic-score          # RAG agéntico: escribe agentic_rag/results_agentic.md (2/12)
+make agentic-run-ollama     # RAG agéntico con Ollama 7B: mismo bucle, modelo más grande (ver agentic_rag/OLLAMA.md)
+make agentic-score-ollama   # RAG agéntico Ollama: escribe agentic_rag/results_agentic_ollama.md
 ```
 
 Ver `make help` para la lista completa.
@@ -270,6 +284,7 @@ Ver `make help` para la lista completa.
 * **El top-5 expandido** (`rag_baseline/retrieval_expanded.json`, 208 KB): se regenera con `make rag-retrieve-expanded`.
 * **La traza del reader expandido** (`rag_baseline/run_trace_expanded.jsonl`, 127 KB): se regenera con `make rag-answer-expanded`.
 * **La traza del agente** (`agentic_rag/run_trace_agentic.jsonl`, 23 KB): se regenera con `make agentic-run`.
+* **La traza del agente Ollama** (`agentic_rag/run_trace_agentic_ollama.jsonl`): se regenera con `make agentic-run-ollama`.
 * **Logs de entrenamiento** (`*.log`): ruido de corrida, los resúmenes están en `memo/training_log_v2.json` y en los `results*.md`.
 
 ---

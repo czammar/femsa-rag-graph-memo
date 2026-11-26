@@ -11,6 +11,7 @@ UV := $(shell command -v uv 2> /dev/null)
 PYTHON_VERSION := 3.12.3
 VENV_BIN := .venv/bin
 PY := $(VENV_BIN)/python
+MODEL ?= qwen2.5:7b-instruct
 
 .PHONY: all check-python-version get-python-version install sync setup clean help \
 	download extract build-cypher load-relate queries download-models \
@@ -18,7 +19,7 @@ PY := $(VENV_BIN)/python
 	rag-retrieve rag-answer rag-score \
 	rag-retrieve-hybrid rag-answer-hybrid rag-score-hybrid \
 	rag-expand rag-retrieve-expanded rag-answer-expanded rag-score-expanded \
-	ragas-metrics agentic-run agentic-score
+	ragas-metrics agentic-run agentic-score agentic-run-ollama agentic-score-ollama
 
 ## Check is python version of the project
 check-python-version:
@@ -187,3 +188,11 @@ agentic-run: download download-models
 ## Score the agentic RAG run and write agentic_rag/results_agentic.md (2/12)
 agentic-score: agentic-run
 	agentic_rag/.venv/bin/python agentic_rag/score_agentic.py
+
+## Run the agentic RAG loop against Ollama (bigger model; MODEL=qwen2.5:7b-instruct by default, e.g. MODEL=qwen2.5:14b-instruct; needs Ollama running + model pulled, see agentic_rag/OLLAMA.md; writes run_trace_agentic_ollama.jsonl, never touches the 1.5B trace)
+agentic-run-ollama: download
+	agentic_rag/.venv/bin/python agentic_rag/run_agentic.py --llm ollama --model $(MODEL)
+
+## Score the Ollama agentic run and write agentic_rag/results_agentic_ollama.md (failure modes start as PENDIENTE: verify by hand, see OLLAMA.md §8)
+agentic-score-ollama: agentic-run-ollama
+	agentic_rag/.venv/bin/python agentic_rag/score_agentic.py --trace agentic_rag/run_trace_agentic_ollama.jsonl --out agentic_rag/results_agentic_ollama.md --model-label "Ollama $(MODEL)" --system-name "RAG agentico Ollama (este run)" --blank-modes
