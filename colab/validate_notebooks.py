@@ -11,6 +11,9 @@
   en todos, y checks de prerrequisitos de etapa (adaptador en 04, trazas
   y retrievals de 05/06 en 08).
 - Ausencia de pasos de maquina local (la guia OLLAMA.md local no es el camino).
+- Autocontencion total: ninguna celda de codigo importa ni ejecuta scripts
+  .py del repo (nombres de scripts y sys.path.insert prohibidos en codigo;
+  en markdown se permiten como procedencia).
 """
 import ast
 import json
@@ -103,7 +106,8 @@ for nb_path in NOTEBOOKS:
 # datos que deben pre-existir; las salidas que generan los notebooks — trazas,
 # resultados, v3, adaptador, eval expandido — no existen aun por definicion).
 OUTPUT_PATTERNS = ("_colab", "reflection_qa_v3", "eval_questions_expanded",
-                   "memory_model_colab", "ollama-manifest", "retrieval_hybrid_k10")
+                   "memory_model_colab", "ollama-manifest", "retrieval_hybrid_k10",
+                   "augment_report")
 referenced = set()
 for nb_path in NOTEBOOKS:
     nb = nbf.read(nb_path, as_version=4)
@@ -127,6 +131,44 @@ for nb_path in NOTEBOOKS:
 
 print()
 print("archivos referenciados:", len(referenced))
+
+# 7. Autocontencion total: ninguna celda de CODIGO importa ni ejecuta
+# scripts .py del repo. En markdown se permite nombrarlos como procedencia.
+BANNED_CODE_FILES = (
+    "extract.py", "build_cypher.py", "load_relate.py",
+    "generate_reflections.py", "augment_v2", "train_memory",
+    "executive_v2", "executive.py", "evaluate.py", "retrieve.py",
+    "answer.py", "score.py", "score_hybrid", "score_expanded",
+    "expand_queries", "retrieve_hybrid", "retrieve_expanded",
+    "judge_rerank", "run_judge", "score_judge", "compute_metrics",
+    "compute_relevancy", "score_agentic", "llm_backends", "agent.py",
+    "qa_to_triples.py",
+)
+BANNED_CODE_PATTERNS = (
+    r"sys\.path\.insert",
+    r"from\s+(executive_v2|evaluate|answer|augment_v2|judge_rerank|run_judge|"
+    r"score_judge|compute_metrics|compute_relevancy|llm_backends|agent)\b",
+    r"import\s+(augment_v2|executive_v2|evaluate|answer|judge_rerank)\b",
+)
+for nb_path in NOTEBOOKS:
+    nb = nbf.read(nb_path, as_version=4)
+    for i, c in enumerate(nb.cells):
+        if c.cell_type != "code":
+            continue
+        src = c.source
+        # saltar celdas shell/magics: no son codigo Python del repo
+        first = src.strip().splitlines()[0].strip() if src.strip() else ""
+        if first.startswith("%") or first.startswith("!"):
+            continue
+        for bad in BANNED_CODE_FILES:
+            if bad in src:
+                errors.append(f"{nb_path.name} celda {i}: codigo referencia "
+                              f"script del repo ({bad})")
+        for pat in BANNED_CODE_PATTERNS:
+            if re.search(pat, src):
+                errors.append(f"{nb_path.name} celda {i}: patron prohibido "
+                              f"en codigo ({pat})")
+
 if warnings:
     print("AVISOS:")
     for w in warnings:

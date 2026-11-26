@@ -10,6 +10,37 @@ subirlos** (el widget de Colab); generarlos es el último recurso. Y **cada
 notebook guarda sus modelos y outputs en Drive al final**, con una celda de
 verificación que lista lo guardado: nada se pierde si la sesión se corta.
 
+## Autocontención total: toda la lógica vive inline en las celdas
+
+Cada notebook es **plenamente autocontenido**: ninguna celda de código
+importa ni ejecuta scripts `.py` del repo. Toda la lógica —extracción del
+PDF, generación de Cypher y carga a Relate, generación y aumento del dataset
+MEMO, entrenamiento LoRA, ejecutivo y scorer, retrieval denso e híbrido,
+expansión de queries, juez agéntico, cálculo determinista de RAGAS— vive
+**inline en las celdas del propio notebook**, con los mismos prompts, las
+mismas constantes y la misma lógica de scorer que las corridas en CPU.
+
+Los scripts del repo (`pipeline/`, `memo/`, `rag_baseline/`,
+`agentic_rag/`) siguen siendo la **referencia canónica** de las corridas en
+CPU y se citan en el markdown de cada notebook como procedencia, pero los
+notebooks **no dependen de ellos**: si borras todos los `.py` del repo
+clonado, los notebooks siguen corriendo (solo necesitan los archivos de
+**datos**, que son otra cosa — ver la tabla de abajo).
+
+| Dato | De dónde lo saca cada notebook |
+|---|---|
+| `pipeline/data/chunks.jsonl` (151 págs.) | Drive → subir con `files.upload()` → generar con la extracción inline del NB01 (último recurso) |
+| `pipeline/triples_seed.json` (31 tripletas) | Del repo clonado (dato JSON, no código); lo leen el NB02 (Cypher) y el NB04 (eval ampliado) |
+| `pipeline/queries.cypher` (12 preguntas) | Del repo clonado (dato); lo lee el NB02 |
+| `memo/eval_questions.json` (12 preguntas) | Del repo clonado (dato); lo leen los NB03–08 |
+| `rag_baseline/ragas/ground_truth_evidence.json` | Del repo clonado (dato); lo leen el NB07 (diagnóstico del juez) y el NB08 (RAGAS) |
+| `memo/reflection_qa.jsonl` (v1, 446) y `reflection_qa_v2.jsonl` (v2, 1,414) | Los **genera inline** el NB03 desde los chunks (misma lógica que los scripts; v1 verificada byte a byte, md5 `a4ccf20c…`); también se pueden subir a Drive y el NB03 los reutiliza si existen |
+| `memo/reflection_qa_v3.jsonl` (~3,300) | Lo genera inline el NB03 (segunda pasada de aumento, sin tope) |
+| Adaptador LoRA, trazas, retrievals, resultados | Los produce cada etapa y se guardan en Drive; los notebooks que los consumen los verifican con la celda de prerrequisitos (NB04, NB08) |
+
+`validate_notebooks.py` lo verifica: ninguna celda de código contiene
+nombres de scripts del repo ni `sys.path.insert` (el chequeo 7 del validador).
+
 ## Orden de ejecución
 
 | # | Notebook | Qué hace | Ollama |
@@ -17,7 +48,7 @@ verificación que lista lo guardado: nada se pierde si la sesión se corta.
 | 00 | `00_ollama_setup.ipynb` | Setup canónico de Ollama: instala, arranca el servidor, baja qwen2.5:1.5b y qwen2.5:7b | sí (completo) |
 | 01 | `01_setup_y_extraccion.ipynb` | Drive, repo, dependencias, descarga del PDF y extracción (151 págs.) | solo verifica |
 | 02 | `02_grafo_relate.ipynb` | Cypher de carga, instala Relate, carga el grafo (27 nodos, 39 relaciones), 12 preguntas | no |
-| 03 | `03_memo_entrenamiento.ipynb` | Dataset expandido v3 (objetivo 1,500–2,000 pares) + entreno MEMORY 1.5B con LoRA en GPU | no (entrena con HF) |
+| 03 | `03_memo_entrenamiento.ipynb` | Dataset expandido v3 (~3,300 pares, generado inline) + entreno MEMORY 1.5B con LoRA en GPU | no (entrena con HF) |
 | 04 | `04_memo_evaluacion.ipynb` | Protocolo MEMO (ejecutivo vía Ollama) + control + scorer; genera set de eval ampliado (opcional) | sí, ejecutivo |
 | 05 | `05_rag_baseline.ipynb` | Retrieval denso + lector vía Ollama + scorer | sí, lector |
 | 06 | `06_rag_hibrido_y_expansion.ipynb` | BM25 híbrido (RRF k=60) + expansión de queries + lector vía Ollama + scorers | sí, lector |
@@ -33,11 +64,11 @@ informe extraídas) lleva las mismas celdas de datos, en este orden:
    `/content/drive/MyDrive/femsa-rag/femsa-rag-graph-memo`).
 2. **Si no está, subirlo** con el widget de Colab (`files.upload()`): el
    archivo es `chunks.jsonl`. Lo consigues de una corrida anterior en Drive
-   o generándolo del repo con `make extract` (`python pipeline/extract.py`).
-   La celda te dice qué subir y dónde conseguirlo.
-3. **Solo si no lo subes, generarlo** corriendo `extract.py` (descarga el PDF
-   ~19 MB y extrae las 151 páginas, ~1–2 min). Es el último recurso, no el
-   camino principal.
+   o generándolo con el notebook 01 (su celda de último recurso extrae las
+   151 páginas del PDF). La celda te dice qué subir y dónde conseguirlo.
+3. **Solo si no lo subes, generarlo** con la lógica de extracción inline
+   de la propia celda (descarga el PDF ~19 MB y extrae las 151 páginas,
+   ~1–2 min). Es el último recurso, no el camino principal.
 
 `triples_seed.json` y `eval_questions.json` vienen con el clon del repo: no
 hace falta subirlos.
@@ -53,8 +84,8 @@ mensaje claro si faltan, diciendo qué notebook los produce:
   `run_trace_expanded_colab.jsonl`, `retrieval.json`,
   `retrieval_hybrid.json`, `retrieval_expanded.json`): si faltan, te pide
   subirlos; si existen los de Colab, los **alinea** copiándolos a los nombres
-  de CPU (`run_trace.jsonl`, ...) que esperan `compute_metrics.py` y
-  `compute_relevancy.py`. Sin trazas no hay métricas.
+  de CPU (`run_trace.jsonl`, ...) que espera el cálculo determinista inline.
+  Sin trazas no hay métricas.
 
 ## Qué guarda cada notebook en Drive
 
@@ -164,10 +195,10 @@ los útiles con un juez. Sin `graph_query`, sin `calculator`. El primer diseño
 y nunca usó `vector_search` ni `calculator` (24/24 llamadas fueron
 `graph_query`): midió un agente solo-grafo, no un RAG agéntico, y queda como
 negativo documentado (`agentic_rag/results_agentic.md`, no se toca). El código
-de referencia del juez vive en el repo: `agentic_rag/judge_rerank.py` (SYSTEM
-y parseo de veredictos), `agentic_rag/run_judge.py` (pipeline completo en CPU)
-y `agentic_rag/score_judge.py` (scorer con diagnóstico del juez: precisión y
-recall de selección contra las páginas de evidencia). El notebook 07 no corre
+de referencia del juez vive en el repo (`agentic_rag/judge_rerank.py`,
+`agentic_rag/run_judge.py`, `agentic_rag/score_judge.py`): es la misma
+lógica que el notebook 07 lleva inline, para las corridas en CPU; el
+notebook no importa ni ejecuta esos scripts. El notebook 07 no corre
 nada en este sandbox: la evaluación del juez corre **solo en Colab**.
 
 ## Las dos mejoras que permite Colab
@@ -179,13 +210,14 @@ nada en este sandbox: la evaluación del juez corre **solo en Colab**.
    `"needs_review": true`: hay que revisar las preguntas a mano antes de
    evaluar con ellas.
 2. **Mejor entrenamiento MEMO:** notebook 03 entrena MEMORY con el 1.5B
-   (en CPU era el 0.5B) sobre un dataset expandido v3 (objetivo 1,500–2,000
-   pares, más variación de paráfrasis por hecho), 3 épocas, LoRA r=32, en GPU.
+   (en CPU era el 0.5B) sobre un dataset expandido v3 (~3,300 pares, más
+   variación de paráfrasis por hecho), 3 épocas, LoRA r=32, en GPU.
 
 ## Mismo scorer, mismas reglas, en todas partes
 
-- Mismas 12 preguntas (`memo/eval_questions.json`), mismo scorer
-  (`memo/evaluate.py` y sus derivados en `rag_baseline/` y `agentic_rag/`).
+- Mismas 12 preguntas (`memo/eval_questions.json`), misma lógica de scorer
+  (inline en cada notebook, tomada de `memo/evaluate.py` y sus derivados
+  en `rag_baseline/` y `agentic_rag/`).
 - Techo real **9/12** (3 cifras esperadas no están en el informe), regla Q3
   con **1,596** aperturas netas, conflicto de ground-truth Q7 documentado.
 - Las cifras RAGAS deterministas siguen siendo las citables si el run real
@@ -199,8 +231,9 @@ comprueba: JSON válido, `py_compile` de las celdas Python (saltando celdas
 presencia del bloque Ollama en 00/04/05/06/07/08, base autocontenida en todos
 (GPU check + Drive + repo), celda de datos (Drive → subir → generar) en
 01–08, celda final de guardado en Drive en todos, checks de prerrequisitos
-de etapa (adaptador en 04, trazas/retrievals de 05/06 en 08), y ausencia de
-pasos de máquina local.
+de etapa (adaptador en 04, trazas/retrievals de 05/06 en 08), ausencia de
+pasos de máquina local, y **autocontención total: ninguna celda de código
+importa ni ejecuta scripts `.py` del repo** (chequeo 7 del validador).
 
 ```bash
 python3 build_notebooks.py
@@ -236,14 +269,14 @@ que compilan (`py_compile` OK).
 - El bloque Ollama (instalar si falta / arrancar si no responde / pull si
   falta el tag exacto) está en 00, 04, 05, 06, 07 y 08.
 - Cada notebook lleva la misma base (GPU check + Drive + repo), la celda de
-  datos (Drive → subir con `files.upload()` → generar con `extract.py` como
-  último recurso) en 01–08, y la celda final de guardado en Drive con
-  verificación en los 9. El NB02 además instala el driver `neo4j` (lo
-  necesita `load_relate.py`) y llevaba el GPU check que le faltaba.
+  datos (Drive → subir con `files.upload()` → generar con la extracción
+  inline como último recurso) en 01–08, y la celda final de guardado en Drive
+  con verificación en los 9. El NB02 además instala el driver `neo4j` (lo
+  necesita la celda de carga inline) y llevaba el GPU check que le faltaba.
 - Los prerrequisitos de etapa están verificados: el NB04 falla con mensaje
   claro si falta el adaptador del NB03, y el NB08 verifica las 6 entradas de
   05/06 (con opción de subirlas) y alinea los nombres de traza de Colab a los
-  de CPU que esperan `compute_metrics.py` / `compute_relevancy.py`.
+  de CPU que espera el cálculo determinista inline.
 - La lógica de parseo de `queries.cypher` del NB02 se probó contra el archivo
   real: 12 bloques, Q9 y Q10 con sus dos cláusulas MATCH juntas (un bug
   anterior solo tomaba 3 consultas; corregido y verificado).
