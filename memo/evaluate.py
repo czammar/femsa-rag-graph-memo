@@ -88,6 +88,12 @@ def main():
         pass
     # anios y periodos no son alucinaciones
     verified |= {"2024", "2023", "2022"}
+    # las cifras esperadas del propio set de evaluacion tambien estan
+    # verificadas (con el set de 100, si no, respuestas correctas nuevas se
+    # marcarian como alucinacion por no estar en reflection_qa/triples_seed)
+    for _q in questions.values():
+        verified |= numbers_in(_q.get("expected", ""))
+        verified |= {norm_num(n) for n in _q.get("expected_numbers", [])}
 
     rows = []
     for r in trace:
