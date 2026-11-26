@@ -91,7 +91,7 @@ femsa-rag-graph-memo/
     │   ├── smoke_test_ragas.py / smoke_test.log  # 1 pregunta con la librería ragas real (juez local 1.5B: timeout)
     │   └── README.md         # Runbook RAGAS
     └── README.md             # Runbook del baseline RAG y sus variantes
-└── agentic_rag/          # RAG agéntico (LangChain + LangGraph, ReAct textual)
+├── agentic_rag/          # RAG agéntico (LangChain + LangGraph, ReAct textual)
     ├── agent.py              # Grafo LangGraph + herramientas + prompts (con plantillas Cypher)
     ├── llm_backends.py       # Backends del LLM: local 1.5B y Ollama (ChatOllama)
     ├── OLLAMA.md             # Guía: mismo agente con un modelo 7B/14B en tu máquina
@@ -101,9 +101,23 @@ femsa-rag-graph-memo/
     ├── test_toolcall*.py / test_cypher.py  # Diagnóstico: cero tool calls nativos; Cypher frágil
     ├── run_trace_agentic.jsonl  # Traza completa (se genera con make agentic-run)
     └── README.md             # Runbook del agente
+└── colab/                # El experimento completo en Google Colab (GPU T4)
+    ├── 00_ollama_setup.ipynb     # Setup canónico de Ollama en la instancia
+    ├── 01_setup_y_extraccion.ipynb  # Drive, clone, extracción del PDF
+    ├── 02_grafo_relate.ipynb     # Relate en Colab + las 12 preguntas Cypher
+    ├── 03_memo_entrenamiento.ipynb  # MEMO v3: 1.5B con dataset ampliado (1,500–2,000)
+    ├── 04_memo_evaluacion.ipynb  # Evaluación MEMO + set ampliado opcional
+    ├── 05_rag_baseline.ipynb     # RAG vectorial con lector vía Ollama
+    ├── 06_rag_hibrido_y_expansion.ipynb  # Híbrido + expansión, lector vía Ollama
+    ├── 07_rag_agentico.ipynb     # Agente con Qwen2.5-7B vía Ollama
+    ├── 08_ragas.ipynb           # RAGAS determinista + run real con juez en GPU
+    ├── build_notebooks.py        # Generador reproducible de los notebooks
+    ├── validate_notebooks.py     # Valida JSON nbformat + compilación de celdas
+    ├── patch_gpu.py              # Opcional: parchea los scripts CPU para usar GPU
+    └── README.md                 # Runbook Colab (orden, GPU, Drive, Ollama)
 ```
 
-Los detalles de cada parte están en `pipeline/README.md`, `memo/README.md`, `rag_baseline/README.md` y `agentic_rag/README.md`.
+Los detalles de cada parte están en `pipeline/README.md`, `memo/README.md`, `rag_baseline/README.md`, `agentic_rag/README.md` y, para la versión en Colab, en `colab/README.md`.
 
 ---
 
@@ -232,6 +246,10 @@ make eval-memo-v2      # evaluación + control + puntuación
 ```
 
 Resultado: **2/12** (correctas Q4 y Q6, +1 parcial en Q3), 2/12 con alucinación. Leer en `memo/results_v2.md` (control en `memo/results_v2_control.md`).
+
+### En Google Colab: los 9 notebooks
+
+Todo el experimento también está como notebooks en [`colab/`](colab/README.md), para correrlo en una GPU T4 con Drive para persistencia y Ollama dentro de la instancia para los modelos intermedios (lector, ejecutivo, juez RAGAS y LLM del agente). Cada notebook lleva su propio setup de Ollama (idempotente) y puede correrse solo; el orden es 00 → 08. El notebook 03 entrena MEMO v3 con el modelo 1.5B y el dataset ampliado a 1,500–2,000 pares, y el 07 corre el agente con Qwen2.5-7B. **Nota honesta:** los notebooks se validaron aquí (JSON nbformat válido, celdas que compilan, archivos referenciados existen), pero no se corrieron de punta a punta en Colab todavía.
 
 ---
 
