@@ -18,7 +18,7 @@ PY := $(VENV_BIN)/python
 	rag-retrieve rag-answer rag-score \
 	rag-retrieve-hybrid rag-answer-hybrid rag-score-hybrid \
 	rag-expand rag-retrieve-expanded rag-answer-expanded rag-score-expanded \
-	ragas-metrics
+	ragas-metrics agentic-run agentic-score
 
 ## Check is python version of the project
 check-python-version:
@@ -179,3 +179,11 @@ rag-score-expanded: rag-answer-expanded
 ragas-metrics: rag-score-expanded
 	$(PY) rag_baseline/ragas/compute_metrics.py
 	$(PY) rag_baseline/ragas/compute_relevancy.py
+
+## Run the agentic RAG loop (LangChain + LangGraph, ReAct textual) over the 12 questions (~65 min CPU, resumable; needs `relate serve` running + agentic_rag/.venv, see agentic_rag/README.md)
+agentic-run: download download-models
+	agentic_rag/.venv/bin/python agentic_rag/run_agentic.py
+
+## Score the agentic RAG run and write agentic_rag/results_agentic.md (2/12)
+agentic-score: agentic-run
+	agentic_rag/.venv/bin/python agentic_rag/score_agentic.py

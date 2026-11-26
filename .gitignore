@@ -15,6 +15,7 @@ rag_baseline/retrieval_hybrid.json
 rag_baseline/run_trace_hybrid.jsonl
 rag_baseline/retrieval_expanded.json
 rag_baseline/run_trace_expanded.jsonl
+agentic_rag/run_trace_agentic.jsonl
 memo/models/
 memo/memory_model/
 memo/memory_model_v2/

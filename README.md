@@ -91,9 +91,17 @@ femsa-rag-graph-memo/
     │   ├── smoke_test_ragas.py / smoke_test.log  # 1 pregunta con la librería ragas real (juez local 1.5B: timeout)
     │   └── README.md         # Runbook RAGAS
     └── README.md             # Runbook del baseline RAG y sus variantes
+└── agentic_rag/          # RAG agéntico (LangChain + LangGraph, ReAct textual)
+    ├── agent.py              # Grafo LangGraph + herramientas + prompts (con plantillas Cypher)
+    ├── run_agentic.py        # Corre las 12 preguntas, escribe la traza (reanudable)
+    ├── score_agentic.py      # Scorer + results_agentic.md
+    ├── results_agentic.md    # 2/12: el bucle no suma con un modelo 1.5B
+    ├── test_toolcall*.py / test_cypher.py  # Diagnóstico: cero tool calls nativos; Cypher frágil
+    ├── run_trace_agentic.jsonl  # Traza completa (se genera con make agentic-run)
+    └── README.md             # Runbook del agente
 ```
 
-Los detalles de cada parte están en `pipeline/README.md`, `memo/README.md` y `rag_baseline/README.md`.
+Los detalles de cada parte están en `pipeline/README.md`, `memo/README.md`, `rag_baseline/README.md` y `agentic_rag/README.md`.
 
 ---
 
@@ -109,6 +117,7 @@ Mismo corpus (FEMSA 2024), mismas 12 preguntas en 3 niveles (hecho directo, comp
 | **RAG vectorial** (MiniLM top-5 + lector Qwen2.5-1.5B) | **2/12** (correctas Q6 y Q11; techo real 9/12: 3 cifras esperadas no están en el informe; detalle en [rag_baseline/results.md](rag_baseline/results.md)) | **2/12** |
 | **RAG híbrido** (BM25 Okapi + MiniLM, RRF k=60, mismo lector/scorer) | **2/12** (correctas Q1 y Q11; no cerró la brecha de retrieval: las preguntas están en español y el corpus en inglés, y los tokens discriminativos viven en la respuesta, no en la pregunta; detalle en [rag_baseline/results_hybrid.md](rag_baseline/results_hybrid.md)) | **1/12** |
 | **RAG híbrido + expansión de queries** (traducción manual al inglés + mapa de términos de dominio, mismo retrieval híbrido/lector/scorer, sin respuestas filtradas) | **5/12** (correctas Q1, Q4, Q6, Q8 y Q10; el primer arreglo del RAG que movió el marcador; el cuello de botella pasó del retrieval al lector; detalle en [rag_baseline/results_expanded.md](rag_baseline/results_expanded.md)) | 3/12 según el scorer (1/12 real: dos flags son artefactos, ver `results_expanded.md`) |
+| **RAG agéntico** (LangChain + LangGraph, ReAct textual, mismo modelo 1.5B; herramientas: retrieval híbrido, Cypher en Relate, calculadora) | **2/12** (correctas Q4 y Q8; el bucle no suma con un modelo de 1.5B: nunca usó vector_search ni calculadora, 10 planes sin acción válida en Q5 y Q9, y en Q11 tenía la respuesta y se abstuvo; detalle en [agentic_rag/results_agentic.md](agentic_rag/results_agentic.md)) | **0/12** |
 
 ### RAGAS: qué dice cada capa del RAG
 
@@ -185,6 +194,15 @@ make ragas-metrics      # precision/recall/faithfulness (~2 s) + proxy de releva
 
 Resultado: denso (precision 0.183, recall pooled 8/17, faithfulness 0.969, relevancy 0.609), híbrido (0.150, 9/17, 0.967, 0.628), expandido (0.400, **17/17**, 0.975, 0.656). Leer en `rag_baseline/ragas/results_ragas.md` (tabla por pregunta y análisis de acuerdo/desacuerdo con la exactitud). `make ragas-metrics` depende de las tres corridas RAG (sus traces `retrieval*.json` / `run_trace*.jsonl`) y escribe `rag_baseline/ragas/metrics_ragas.json`. **Método honesto:** la librería `ragas` 0.4.4 con el juez local Qwen2.5-1.5B en CPU no completó ni una métrica en el smoke test (timeout de 180 s por job; log en `rag_baseline/ragas/smoke_test.log`), así que las cuatro métricas se calculan determinísticamente con las definiciones estándar de RAGAS desde los traces y el ground truth auditable en `rag_baseline/ragas/ground_truth_evidence.json`. No son un run juzgado por GPT-4: la precision es un límite inferior (definición estricta por página) y la faithfulness determinista es un límite superior (no detecta la mala atribución). El proxy de relevancy es coseno MiniLM, no la relevancy real de RAGAS (preguntas generadas por LLM), y es la métrica menos fiable del set.
 
+### RAG agéntico (LangChain + LangGraph): 2/12
+
+```bash
+make agentic-run         # agente ReAct: plan -> act -> observe -> answer, 12 preguntas (~65 min en CPU, reanudable)
+make agentic-score       # escribe agentic_rag/results_agentic.md
+```
+
+Resultado: **2/12** (correctas Q4 y Q8), 0/12 con alucinación. Leer en `agentic_rag/results_agentic.md`. El agente usa el mismo modelo 1.5B y el mismo scorer que el RAG, con tres herramientas (retrieval híbrido, Cypher en Relate, calculadora), pero el modelo de 1.5B no emite tool calls nativos (verificado: cero tool_calls con `bind_tools`), así que el bucle es ReAct textual. En la práctica el agente nunca usó vector_search ni calculadora: las 24 llamadas fueron graph_query. Los dos aciertos son copias literales de la plantilla de consulta; todo lo que exige componer se cae, y en Q11 la primera consulta devolvió "Spin" y el agente se abstuvo igual. La corrida se cayó en Q5 por un bug del router (faltaba "plan" en el mapa de `add_conditional_edges`) y se reanudó desde Q5. Necesita `relate serve` corriendo (ver `agentic_rag/README.md`).
+
 ### MEMO run 1: 0/12
 
 ```bash
@@ -229,6 +247,8 @@ make rag-retrieve-expanded  # RAG expansión: retrieval híbrido con queries exp
 make rag-answer-expanded    # RAG expansión: reader con el top-5 expandido (~26 min)
 make rag-score-expanded     # RAG expansión: escribe rag_baseline/results_expanded.md (5/12)
 make ragas-metrics          # RAGAS determinista de las 3 variantes RAG (~2 s + ~36 s; escribe rag_baseline/ragas/metrics_ragas.json)
+make agentic-run            # RAG agéntico: 12 preguntas con el bucle ReAct (~65 min en CPU, reanudable)
+make agentic-score          # RAG agéntico: escribe agentic_rag/results_agentic.md (2/12)
 ```
 
 Ver `make help` para la lista completa.
@@ -249,6 +269,7 @@ Ver `make help` para la lista completa.
 * **La traza del reader híbrido** (`rag_baseline/run_trace_hybrid.jsonl`, 124 KB): se regenera con `make rag-answer-hybrid`.
 * **El top-5 expandido** (`rag_baseline/retrieval_expanded.json`, 208 KB): se regenera con `make rag-retrieve-expanded`.
 * **La traza del reader expandido** (`rag_baseline/run_trace_expanded.jsonl`, 127 KB): se regenera con `make rag-answer-expanded`.
+* **La traza del agente** (`agentic_rag/run_trace_agentic.jsonl`, 23 KB): se regenera con `make agentic-run`.
 * **Logs de entrenamiento** (`*.log`): ruido de corrida, los resúmenes están en `memo/training_log_v2.json` y en los `results*.md`.
 
 ---
